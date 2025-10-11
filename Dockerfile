@@ -56,11 +56,13 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 
+# Railway dynamically assigns the PORT, so we don't hardcode it
+# EXPOSE directive is just documentation, the app will bind to $PORT
 EXPOSE 3000
 
-ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
 # server.js is created by next build from the standalone output
 # https://nextjs.org/docs/pages/api-reference/next-config-js/output
+# The PORT environment variable will be provided by Railway
 CMD ["node", "server.js"]
