@@ -35,7 +35,7 @@ After a thorough examination of the codebase, here's what I found:
 The Dockerfile already sets:
 - `NODE_ENV=production`
 - `NEXT_TELEMETRY_DISABLED=1`
-- `PORT=3000`
+- `PORT=8080`
 - `HOSTNAME="0.0.0.0"`
 
 You can deploy immediately without any additional configuration! 🎉

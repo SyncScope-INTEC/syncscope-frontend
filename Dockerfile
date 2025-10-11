@@ -58,7 +58,7 @@ USER nextjs
 
 # Railway dynamically assigns the PORT, so we don't hardcode it
 # EXPOSE directive is just documentation, the app will bind to $PORT
-EXPOSE 3000
+EXPOSE 8080
 
 ENV HOSTNAME="0.0.0.0"
 
