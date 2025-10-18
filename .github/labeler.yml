@@ -1,0 +1,73 @@
+# Auto-labeler configuration
+
+# Components
+'component':
+  - changed-files:
+    - any-glob-to-any-file: 'components/**/*'
+
+# Pages/App
+'pages':
+  - changed-files:
+    - any-glob-to-any-file: 'app/**/*'
+
+# Styles
+'styles':
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'styles/**/*'
+      - '**/*.css'
+
+# Configuration
+'config':
+  - changed-files:
+    - any-glob-to-any-file:
+      - '*.config.*'
+      - '.env*'
+      - 'tsconfig.json'
+
+# Tests
+'tests':
+  - changed-files:
+    - any-glob-to-any-file:
+      - '**/*.test.*'
+      - '**/*.spec.*'
+      - '**/__tests__/**/*'
+      - 'jest.*.js'
+
+# Documentation
+'documentation':
+  - changed-files:
+    - any-glob-to-any-file:
+      - '**/*.md'
+      - 'docs/**/*'
+
+# Dependencies
+'dependencies':
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'pnpm-lock.yaml'
+
+# CI/CD
+'ci/cd':
+  - changed-files:
+    - any-glob-to-any-file:
+      - '.github/**/*'
+      - 'Dockerfile'
+      - '.dockerignore'
+
+# API/Hooks
+'api':
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'app/api/**/*'
+
+'hooks':
+  - changed-files:
+    - any-glob-to-any-file: 'hooks/**/*'
+
+# Lib/Utils
+'lib':
+  - changed-files:
+    - any-glob-to-any-file: 'lib/**/*'
