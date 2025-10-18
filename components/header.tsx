@@ -1,11 +1,18 @@
 import { Button } from "@/components/ui/button"
+import Image from "next/image"
 
 export function Header() {
   return (
     <header className="flex items-center justify-between px-6 py-4 max-w-7xl mx-auto">
       <div className="flex items-center space-x-2">
-        <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
-          <span className="text-white font-bold text-sm">S</span>
+      <div className="w-15 rounded-lg flex items-center justify-center">
+          <Image
+        src="/favicon.png"
+        alt="Team working illustration"
+        width={500}
+        height={400}
+        className="w-full h-auto"
+      />
         </div>
         <span className="font-semibold text-xl">SyncScope</span>
       </div>
