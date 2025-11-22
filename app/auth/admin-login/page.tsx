@@ -55,7 +55,7 @@ export default function AdminLogin() {
       await dispatch(login({ email: formData.email, password: formData.password })).unwrap()
       toast.success("¡Bienvenido!")
       router.push("/admin/dashboard")
-    } catch (err) {
+    } catch (_err) {
       // El error ya se maneja en el useEffect
     }
   }

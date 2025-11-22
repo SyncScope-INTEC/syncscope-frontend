@@ -10,6 +10,14 @@ export function Header() {
   const router = useRouter()
   const { isAuthenticated } = useAppSelector((state) => state.auth)
 
+  const handleLoginClick = () => {
+    if (isAuthenticated) {
+      router.push('/admin/dashboard')
+    } else {
+      router.push('/auth/admin-login')
+    }
+  }
+
   return (
     <header className="flex items-center justify-between px-6 py-4 max-w-7xl mx-auto">
       <Link href="/" className="flex items-center space-x-2 cursor-pointer">
@@ -28,7 +36,7 @@ export function Header() {
         <Link href="/pricing" className="text-gray-700 hover:text-purple-600 transition-colors">
           Paquetes
         </Link>
-        <Link href="/faq" className="text-gray-700 hover:text-purple-600 transition-colors">
+        <Link href="/services" className="text-gray-700 hover:text-purple-600 transition-colors">
           Servicios
         </Link>
         <Link href="/faq" className="text-gray-700 hover:text-purple-600 transition-colors">
@@ -38,13 +46,7 @@ export function Header() {
       <Button
         variant="outline"
         className="border-purple-200 text-purple-600 hover:bg-purple-50 bg-transparent"
-        onClick={() => {
-          if (isAuthenticated) {
-            router.push('/admin/dashboard')
-          } else {
-            router.push('/auth/admin-login')
-          }
-        }}
+        onClick={handleLoginClick}
       >
         {isAuthenticated ? 'Dashboard' : 'Iniciar sesión'}
       </Button>

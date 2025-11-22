@@ -1,3 +1,5 @@
+"use client"
+
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -16,7 +18,7 @@ export default function ServicesPage() {
       <section className="px-6 py-16 max-w-7xl mx-auto text-center">
         <div className="relative">
           {/* Background circle */}
-          <div className="absolute inset-0 flex items-center justify-center">
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
             <div className="w-96 h-96 md:w-[600px] md:h-[600px] border-2 border-purple-200 rounded-full opacity-50"></div>
           </div>
 
