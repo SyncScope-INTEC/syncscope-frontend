@@ -27,6 +27,16 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 # Uncomment the following line in case you want to disable telemetry during the build.
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# Accept build arguments for public environment variables
+ARG NEXT_PUBLIC_AUTH_URL
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_GATEWAY_URL
+
+# Make them available during build time
+ENV NEXT_PUBLIC_AUTH_URL=$NEXT_PUBLIC_AUTH_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_GATEWAY_URL=$NEXT_PUBLIC_GATEWAY_URL
+
 # Build Next.js application
 RUN pnpm run build
 

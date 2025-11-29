@@ -1,6 +1,11 @@
 import axios from 'axios'
 
-const API_URL = `${process.env.NEXT_PUBLIC_AUTH_URL}/auth`
+console.log('NEXT_PUBLIC_AUTH_URL:', process.env.NEXT_PUBLIC_AUTH_URL)
+
+const AUTH_SERVICE_URL = process.env.NEXT_PUBLIC_AUTH_URL || 'https://syncscope-auth-service-dev.up.railway.app'
+const API_URL = `${AUTH_SERVICE_URL}/auth`
+
+console.log('Final API_URL for authService:', API_URL)
 
 const api = axios.create({
   baseURL: API_URL,
