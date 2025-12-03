@@ -11,6 +11,7 @@ import { Github } from "lucide-react"
 import Link from "next/link"
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks"
 import { login, clearError } from "@/lib/store/slices/authSlice"
+import { authService } from "@/lib/services/authService"
 import { toast } from "sonner"
 
 export default function AdminLogin() {
@@ -22,6 +23,7 @@ export default function AdminLogin() {
     email: "",
     password: "",
   })
+  const [githubLoading, setGithubLoading] = useState(false)
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -57,6 +59,27 @@ export default function AdminLogin() {
       router.push("/admin/dashboard")
     } catch (_err) {
       // El error ya se maneja en el useEffect
+    }
+  }
+
+  const handleGitHubLogin = async () => {
+    try {
+      setGithubLoading(true)
+      
+      // Obtener URL de autenticación de GitHub
+      const response = await authService.getGitHubAuthUrl()
+      
+      if (response?.auth_url) {
+        // Redirigir a GitHub OAuth
+        window.location.href = response.auth_url
+      } else {
+        toast.error("Error al obtener URL de GitHub")
+      }
+    } catch (error: any) {
+      console.error('GitHub OAuth error:', error)
+      toast.error("Error al iniciar sesión con GitHub")
+    } finally {
+      setGithubLoading(false)
     }
   }
 
@@ -136,16 +159,17 @@ export default function AdminLogin() {
                 <div className="flex gap-4">
                   <Button
                     type="button"
+                    onClick={handleGitHubLogin}
                     className="flex-1 bg-green-500 hover:bg-green-600 text-white py-3 px-6 rounded-lg font-medium flex items-center justify-center gap-2"
-                    disabled={loading}
+                    disabled={loading || githubLoading}
                   >
                     <Github className="w-5 h-5" />
-                    Iniciar con Github
+                    {githubLoading ? "Conectando..." : "Iniciar con Github"}
                   </Button>
                   <Button
                     type="submit"
                     className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-3 px-6 rounded-lg font-medium"
-                    disabled={loading}
+                    disabled={loading || githubLoading}
                   >
                     {loading ? "Iniciando..." : "Iniciar sesión"}
                   </Button>

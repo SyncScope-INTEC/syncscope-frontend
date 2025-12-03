@@ -1,5 +1,6 @@
 "use client"
 
+import { persistor } from "@/lib/store"
 import { useState, useRef, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
@@ -35,16 +36,23 @@ export function AppHeader() {
   }, [isDropdownOpen])
 
   const handleLogout = async () => {
-    try {
-      if (refreshToken && sessionToken) {
-        await dispatch(logout({ refreshToken, sessionToken })).unwrap()
-      }
-      toast.success("Sesión cerrada")
-      router.push("/")
-    } catch (error) {
-      toast.error("Error al cerrar sesión")
+  try {
+    if (refreshToken && sessionToken) {
+      await dispatch(logout({ refreshToken, sessionToken })).unwrap()
     }
+    
+    // Purgar completamente el persist
+    await persistor.purge()
+    
+    toast.success("Sesión cerrada")
+    router.push("/")
+  } catch (error) {
+    // Aún si falla, limpiar todo
+    await persistor.purge()
+    toast.error("Error al cerrar sesión")
+    router.push("/")
   }
+}
 
   const handleMenuItemClick = (action: () => void) => {
     setIsDropdownOpen(false)

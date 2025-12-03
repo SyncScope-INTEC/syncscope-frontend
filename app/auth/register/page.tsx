@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { TimezoneSelect } from "@/components/forms/timezone-select"
 import Link from "next/link"
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks"
 import { register, clearError } from "@/lib/store/slices/authSlice"
@@ -26,6 +27,7 @@ export default function RegisterPage() {
     password: "",
     password_confirm: "",
     role: "developer",
+    timezone: "UTC-4",
   })
 
   useEffect(() => {
@@ -52,6 +54,13 @@ export default function RegisterPage() {
     setFormData({
       ...formData,
       role: value,
+    })
+  }
+
+  const handleTimezoneChange = (value: string) => {
+    setFormData({
+      ...formData,
+      timezone: value,
     })
   }
 
@@ -168,20 +177,33 @@ export default function RegisterPage() {
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="role" className="text-left block text-gray-900 font-medium">
-                    Rol
-                  </Label>
-                  <Select value={formData.role} onValueChange={handleRoleChange} disabled={loading}>
-                    <SelectTrigger className="w-full px-4 py-3 border-2 border-purple-200 rounded-lg focus:border-purple-400 focus:ring-0">
-                      <SelectValue placeholder="Selecciona tu rol" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="developer">Desarrollador</SelectItem>
-                      <SelectItem value="manager">Manager</SelectItem>
-                      <SelectItem value="admin">Administrador</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="role" className="text-left block text-gray-900 font-medium">
+                      Rol
+                    </Label>
+                    <Select value={formData.role} onValueChange={handleRoleChange} disabled={loading}>
+                      <SelectTrigger className="w-full px-4 py-3 border-2 border-purple-200 rounded-lg focus:border-purple-400 focus:ring-0">
+                        <SelectValue placeholder="Selecciona tu rol" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="developer">Desarrollador</SelectItem>
+                        <SelectItem value="manager">Manager</SelectItem>
+                        <SelectItem value="admin">Administrador</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="timezone" className="text-left block text-gray-900 font-medium">
+                      Zona horaria
+                    </Label>
+                    <TimezoneSelect
+                      value={formData.timezone}
+                      onChange={handleTimezoneChange}
+                      disabled={loading}
+                    />
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

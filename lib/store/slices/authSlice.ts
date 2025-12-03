@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
 import { authService } from '@/lib/services/authService'
+import { PURGE } from 'redux-persist'
 
 interface User {
   id: string
@@ -54,6 +55,7 @@ export const register = createAsyncThunk(
       last_name,
       company_name,
       role,
+      timezone
     }: {
       email: string
       password: string
@@ -61,7 +63,8 @@ export const register = createAsyncThunk(
       first_name: string
       last_name: string
       company_name: string
-      role: string
+      role: string,
+      timezone?: string
     },
     { rejectWithValue }
   ) => {
@@ -74,6 +77,7 @@ export const register = createAsyncThunk(
         last_name,
         company_name,
         role,
+        ...(timezone && { timezone }),
       })
       return response
     } catch (error: any) {
@@ -87,8 +91,10 @@ export const logout = createAsyncThunk(
   async ({ refreshToken, sessionToken }: { refreshToken: string; sessionToken: string }, { rejectWithValue }) => {
     try {
       await authService.logout(refreshToken, sessionToken)
+      return true
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Error al cerrar sesión')
+      // Aún si falla el API, limpiamos el estado local
+      return true
     }
   }
 )
@@ -125,11 +131,7 @@ const authSlice = createSlice({
       state.isAuthenticated = true
     },
     logoutLocal: (state) => {
-      state.user = null
-      state.accessToken = null
-      state.refreshToken = null
-      state.sessionToken = null
-      state.isAuthenticated = false
+      return initialState
     },
   },
   extraReducers: (builder) => {
@@ -142,8 +144,8 @@ const authSlice = createSlice({
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false
         state.user = action.payload.user
-        state.accessToken = action.payload.access
-        state.refreshToken = action.payload.refresh
+        state.accessToken = action.payload.tokens.access
+        state.refreshToken = action.payload.tokens.refresh
         state.sessionToken = action.payload.session_token
         state.isAuthenticated = true
       })
@@ -161,8 +163,8 @@ const authSlice = createSlice({
       .addCase(register.fulfilled, (state, action) => {
         state.loading = false
         state.user = action.payload.user
-        state.accessToken = action.payload.access
-        state.refreshToken = action.payload.refresh
+        state.accessToken = action.payload.tokens.access
+        state.refreshToken = action.payload.tokens.refresh
         state.sessionToken = action.payload.session_token
         state.isAuthenticated = true
       })
@@ -177,21 +179,10 @@ const authSlice = createSlice({
         state.loading = true
       })
       .addCase(logout.fulfilled, (state) => {
-        state.loading = false
-        state.user = null
-        state.accessToken = null
-        state.refreshToken = null
-        state.sessionToken = null
-        state.isAuthenticated = false
+        return initialState
       })
       .addCase(logout.rejected, (state) => {
-        state.loading = false
-        // Aun si falla, limpiar el estado local
-        state.user = null
-        state.accessToken = null
-        state.refreshToken = null
-        state.sessionToken = null
-        state.isAuthenticated = false
+        return initialState
       })
 
     // Verify Token
@@ -205,13 +196,13 @@ const authSlice = createSlice({
         state.isAuthenticated = true
       })
       .addCase(verifyToken.rejected, (state) => {
-        state.loading = false
-        state.user = null
-        state.accessToken = null
-        state.refreshToken = null
-        state.sessionToken = null
-        state.isAuthenticated = false
+        return initialState
       })
+
+    // Limpiar todo cuando se purga el persist
+    builder.addCase(PURGE, () => {
+      return initialState
+    })
   },
 })
 

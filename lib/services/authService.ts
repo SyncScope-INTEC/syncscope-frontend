@@ -1,11 +1,10 @@
 import axios from 'axios'
 
-console.log('NEXT_PUBLIC_AUTH_URL:', process.env.NEXT_PUBLIC_AUTH_URL)
+const AUTH_API_URL = process.env.NEXT_PUBLIC_AUTH_URL
+const API_URL = `${AUTH_API_URL}/auth`
 
-const AUTH_SERVICE_URL = process.env.NEXT_PUBLIC_AUTH_URL || 'https://syncscope-auth-service-dev.up.railway.app'
-const API_URL = `${AUTH_SERVICE_URL}/auth`
-
-console.log('Final API_URL for authService:', API_URL)
+console.log('🔍 AUTH_API_URL:', AUTH_API_URL)
+console.log('🔍 API_URL:', API_URL)
 
 const api = axios.create({
   baseURL: API_URL,
@@ -40,6 +39,7 @@ api.interceptors.request.use(
 )
 
 export const authService = {
+  // Auth básico
   login: async (email: string, password: string) => {
     const response = await api.post('/login/', { email, password })
     return response.data
@@ -76,6 +76,7 @@ export const authService = {
     return response.data
   },
 
+  // Profile
   getProfile: async () => {
     const response = await api.get('/profile/')
     return response.data
@@ -92,6 +93,45 @@ export const authService = {
       new_password: newPassword,
       new_password_confirm: newPasswordConfirm,
     })
+    return response.data
+  },
+
+  // Profile Image
+  getUserImage: async (userId: string) => {
+    const response = await api.get(`/users/${userId}/image/`)
+    return response.data
+  },
+
+  uploadUserImage: async (userId: string, imageFile: File) => {
+    const formData = new FormData()
+    formData.append('image', imageFile)
+
+    const response = await api.post(`/users/${userId}/image/`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+    return response.data
+  },
+
+  // GitHub OAuth
+  getGitHubAuthUrl: async () => {
+    const response = await api.get('/github/url/')
+    return response.data
+  },
+
+  initiateGitHubOAuth: async () => {
+    const response = await api.post('/github/initiate/')
+    return response.data
+  },
+
+  checkGitHubStatus: async (stateId: string) => {
+    const response = await api.get(`/github/status/${stateId}/`)
+    return response.data
+  },
+
+  handleGitHubCallback: async (code: string, state: string) => {
+    const response = await api.get(`/github/callback/?code=${code}&state=${state}`)
     return response.data
   },
 }

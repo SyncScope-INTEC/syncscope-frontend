@@ -21,8 +21,21 @@ export default function AdminProfilePage() {
       try {
         setIsLoading(true)
 
-        // Obtener perfil del usuario
+        // Obtener perfil del usuario desde el backend
         const profileData = await authService.getProfile()
+
+        // Intentar obtener la imagen de perfil
+        let profileImageUrl = '/professional-person.png'
+        if (user?.id) {
+          try {
+            const imageData = await authService.getUserImage(user.id)
+            if (imageData?.url) {
+              profileImageUrl = imageData.url
+            }
+          } catch (imgError) {
+            console.log('No profile image found, using default')
+          }
+        }
 
         // Obtener últimas sesiones como actividades
         const sessions = await monitoringService
@@ -35,25 +48,43 @@ export default function AdminProfilePage() {
             id: session.session_id || `${index}`,
             title: `Sesión de desarrollo`,
             description: session.ide_name || 'IDE desconocido',
-            date: new Date(session.session_start).toLocaleDateString('es-ES'),
-            time: session.git_repository_url || 'Sin repositorio',
+            date: new Date(session.session_start).toLocaleDateString('es-ES', {
+              day: '2-digit',
+              month: 'long',
+              year: 'numeric',
+            }),
+            time: session.git_repository_url
+              ? `Repo: ${session.git_repository_url.split('/').pop()}`
+              : 'Sin repositorio',
           })) || []
 
         setProfile({
-          firstName: profileData.first_name || user?.first_name || '',
+          firstName: profileData.first_name || user?.first_name || 'Usuario',
           lastName: profileData.last_name || user?.last_name || '',
           role: profileData.role || user?.role || 'Usuario',
           email: profileData.email || user?.email || '',
           phone: profileData.phone || '000-0000-000',
           identifier: user?.id || '000000000',
-          company: profileData.company_name || user?.company_name || 'Sin empresa',
+          company: profileData.company_id || 'Sin empresa', // ← company_id del backend
           gitHubUser: profileData.github_username || 'N/A',
           gitLabUser: profileData.gitlab_username || 'N/A',
           timezone: profileData.timezone || 'UTC-4',
-          status: 'Activo',
-          createdDate: new Date(profileData.created_at || Date.now()).toLocaleDateString('es-ES'),
-          lastUpdated: new Date(profileData.updated_at || Date.now()).toLocaleDateString('es-ES'),
-          profileImage: profileData.profile_image || '/professional-person.png',
+          status: profileData.is_active ? 'Activo' : 'Inactivo',
+          createdDate: profileData.created_at
+            ? new Date(profileData.created_at).toLocaleDateString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+              })
+            : new Date().toLocaleDateString('es-ES'),
+          lastUpdated: profileData.updated_at
+            ? new Date(profileData.updated_at).toLocaleDateString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+              })
+            : new Date().toLocaleDateString('es-ES'),
+          profileImage: profileImageUrl,
         })
 
         setActivities(mappedActivities)
