@@ -1,10 +1,12 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Image from "next/image"
 import { AppHeader } from "@/components/navigation/app-header"
 import { Footer } from "@/components/footer"
-import { ProfileCard } from "@/components/cards/profile-card"
-import { ActivityCard } from "@/components/cards/activity-card"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { EditProfileModal } from "@/components/modals/edit-profile-modal"
 import { useAppSelector } from "@/lib/store/hooks"
 import { authService } from "@/lib/services/authService"
 import { monitoringService } from "@/lib/services/monitoringService"
@@ -15,6 +17,7 @@ export default function AdminProfilePage() {
   const [profile, setProfile] = useState<any>(null)
   const [activities, setActivities] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [showEditModal, setShowEditModal] = useState(false)
 
   useEffect(() => {
     async function fetchProfileData() {
@@ -39,33 +42,30 @@ export default function AdminProfilePage() {
 
         // Obtener últimas sesiones como actividades
         const sessions = await monitoringService
-          .getUserSessions(user?.id || '', { limit: 3 })
+          .getUserSessions(user?.id || '', { limit: 5 })
           .catch(() => [])
 
         // Mapear sesiones a formato de actividades
         const mappedActivities =
           sessions?.map((session: any, index: number) => ({
             id: session.session_id || `${index}`,
-            title: `Sesión de desarrollo`,
-            description: session.ide_name || 'IDE desconocido',
+            title: session.git_repository_url?.split('/').pop() || 'Sesión de desarrollo',
+            assignee: `${profileData.first_name} ${profileData.last_name}`,
             date: new Date(session.session_start).toLocaleDateString('es-ES', {
               day: '2-digit',
               month: 'long',
               year: 'numeric',
             }),
-            time: session.git_repository_url
-              ? `Repo: ${session.git_repository_url.split('/').pop()}`
-              : 'Sin repositorio',
           })) || []
 
         setProfile({
-          firstName: profileData.first_name || user?.first_name || 'Usuario',
-          lastName: profileData.last_name || user?.last_name || '',
-          role: profileData.role || user?.role || 'Usuario',
-          email: profileData.email || user?.email || '',
+          firstName: profileData.first_name || 'Usuario',
+          lastName: profileData.last_name || '',
+          role: profileData.role || 'Usuario',
+          email: profileData.email || '',
           phone: profileData.phone || '000-0000-000',
-          identifier: user?.id || '000000000',
-          company: profileData.company_id || 'Sin empresa', // ← company_id del backend
+          identifier: profileData.id || '000000000',
+          company: profileData.company_name || 'Sin empresa',
           gitHubUser: profileData.github_username || 'N/A',
           gitLabUser: profileData.gitlab_username || 'N/A',
           timezone: profileData.timezone || 'UTC-4',
@@ -121,8 +121,9 @@ export default function AdminProfilePage() {
     }
   }, [user])
 
-  const handleEditProfile = () => {
-    toast.info('Función de edición próximamente')
+  const handleSaveProfile = (data: { email: string; phone: string; timezone: string }) => {
+    setProfile({ ...profile, ...data })
+    toast.success('Perfil actualizado exitosamente')
   }
 
   const handleViewMoreActivities = () => {
@@ -131,9 +132,9 @@ export default function AdminProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white">
+      <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-50 to-white">
         <AppHeader />
-        <main className="max-w-7xl mx-auto px-6 py-8">
+        <main className="flex-1 max-w-7xl mx-auto px-6 py-8 w-full">
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
           </div>
@@ -145,12 +146,10 @@ export default function AdminProfilePage() {
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white">
+      <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-50 to-white">
         <AppHeader />
-        <main className="max-w-7xl mx-auto px-6 py-8">
-          <div className="text-center py-12">
-            <p className="text-gray-600">No se pudo cargar el perfil</p>
-          </div>
+        <main className="flex-1 max-w-7xl mx-auto px-6 py-8 w-full">
+          <p className="text-center text-gray-600">No se encontró información del perfil</p>
         </main>
         <Footer />
       </div>
@@ -158,44 +157,143 @@ export default function AdminProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-50 to-white">
       <AppHeader />
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Bienvenido, {profile.firstName}</h1>
-          <p className="text-gray-600 mt-1">{profile.role}</p>
-        </div>
+      <main className="flex-1 max-w-7xl mx-auto px-6 py-8 w-full">
+        {/* Removed header section to save space */}
 
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Profile Card - Spans 2 columns on large screens */}
-          <div className="lg:col-span-2">
-            <ProfileCard
-              firstName={profile.firstName}
-              lastName={profile.lastName}
-              role={profile.role}
-              email={profile.email}
-              phone={profile.phone}
-              identifier={profile.identifier}
-              company={profile.company}
-              gitHubUser={profile.gitHubUser}
-              gitLabUser={profile.gitLabUser}
-              timezone={profile.timezone}
-              status={profile.status}
-              createdDate={profile.createdDate}
-              lastUpdated={profile.lastUpdated}
-              profileImage={profile.profileImage}
-              onEdit={handleEditProfile}
-              showEditButton={true}
-            />
-          </div>
+          <Card className="lg:col-span-2 p-6 border-2 border-purple-200">
+            <div className="flex flex-col md:flex-row gap-6">
+              {/* Profile Image - Larger */}
+              <div className="flex-shrink-0">
+                <div className="relative w-48 h-56 rounded-lg overflow-hidden border-2 border-purple-200">
+                  <Image
+                    src={profile.profileImage}
+                    alt={`${profile.firstName} ${profile.lastName}`}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              </div>
+
+              {/* Profile Info */}
+              <div className="flex-1 space-y-6">
+                {/* Top Section - Identifier, Company, Email, Phone */}
+                <div className="space-y-2 text-sm">
+                  <div>
+                    <p className="text-gray-500">Número identificador</p>
+                    <p className="text-gray-900 font-semibold">{profile.identifier}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Compañía</p>
+                    <p className="text-gray-900 font-semibold">{profile.company}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Correo electrónico</p>
+                    <p className="text-gray-900 font-semibold">{profile.email}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Número telefónico</p>
+                    <p className="text-gray-900 font-semibold">{profile.phone}</p>
+                  </div>
+                </div>
+
+                {/* Bottom Section - Personal Info Grid */}
+                <div className="grid grid-cols-2 gap-4 text-sm pt-4 border-t border-gray-200">
+                  <div>
+                    <p className="text-gray-500">Nombre</p>
+                    <p className="text-gray-900 font-semibold">{profile.firstName}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Apellido</p>
+                    <p className="text-gray-900 font-semibold">{profile.lastName}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Usuario GitHub</p>
+                    <p className="text-gray-900 font-semibold">{profile.gitHubUser}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Usuario Gitmlab</p>
+                    <p className="text-gray-900 font-semibold">{profile.gitLabUser}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Zona horaria</p>
+                    <p className="text-gray-900 font-semibold">{profile.timezone}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Estado</p>
+                    <p className="text-gray-900 font-semibold">{profile.status}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Fecha de creación</p>
+                    <p className="text-gray-900 font-semibold">{profile.createdDate}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Última actualización</p>
+                    <p className="text-gray-900 font-semibold">{profile.lastUpdated}</p>
+                  </div>
+                </div>
+
+                {/* Edit Button */}
+                <div className="flex justify-end pt-4">
+                  <Button
+                    onClick={() => setShowEditModal(true)}
+                    variant="outline"
+                    className="border-purple-600 text-purple-600 hover:bg-purple-50"
+                  >
+                    Editar
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </Card>
 
           {/* Activity Card */}
-          <ActivityCard activities={activities} onViewMore={handleViewMoreActivities} />
+          <Card className="p-6 border-2 border-yellow-300 bg-yellow-50/50 flex flex-col">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">Próximas actividades</h3>
+
+            {activities.length > 0 ? (
+              <div className="space-y-3 flex-1">
+                {activities.map((activity) => (
+                  <div key={activity.id} className="text-sm">
+                    <p className="font-semibold text-gray-900">{activity.title}</p>
+                    <p className="text-gray-600">{activity.assignee}</p>
+                    <p className="text-xs text-gray-500 mt-1">{activity.date}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500 flex-1">No hay actividades recientes</p>
+            )}
+
+            {/* Ver más button - stays at bottom */}
+            <div className="pt-6 mt-auto">
+              <Button
+                onClick={handleViewMoreActivities}
+                className="w-full bg-purple-600 hover:bg-purple-700 text-white rounded-full"
+              >
+                Ver más
+              </Button>
+            </div>
+          </Card>
         </div>
       </main>
+
+      {/* Edit Profile Modal */}
+      <EditProfileModal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        profile={{
+          email: profile.email,
+          phone: profile.phone,
+          timezone: profile.timezone,
+        }}
+        onSave={handleSaveProfile}
+      />
 
       <Footer />
     </div>

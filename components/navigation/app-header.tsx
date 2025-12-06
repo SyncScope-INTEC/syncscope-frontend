@@ -60,7 +60,7 @@ export function AppHeader() {
   }
 
   return (
-    <header className="w-full bg-gray-900 border-b border-gray-700 sticky top-0 z-50">
+    <header className="w-full bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
       <div className="flex items-center justify-between px-6 py-4">
         {/* Logo */}
         <Link href="/admin/dashboard" className="flex items-center gap-3 cursor-pointer">
@@ -73,14 +73,14 @@ export function AppHeader() {
               className="w-full h-auto"
             />
           </div>
-          <span className="text-white font-semibold text-lg">SyncScope</span>
+          <span className="text-gray-900 font-semibold text-lg">SyncScope</span>
         </Link>
 
         {/* Navigation */}
         <div className="flex items-center gap-8">
-          <span className="text-white font-medium">Empleados</span>
+          <span className="text-gray-900 font-medium">Empleados</span>
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" className="text-green-400 hover:bg-gray-800">
+            <Button variant="ghost" size="icon" className="text-green-600 hover:bg-gray-100">
               <Bell className="w-5 h-5" />
             </Button>
 
@@ -89,14 +89,14 @@ export function AppHeader() {
               <Button
                 variant="ghost"
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center gap-2 text-green-400 hover:bg-gray-800"
+                className="text-gray-900 hover:bg-gray-100 flex items-center gap-2"
               >
                 <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
                   {user?.first_name?.[0]?.toUpperCase() || "U"}
                 </div>
-                <span className="hidden md:block text-white">{user?.first_name || "Usuario"}</span>
+                <span className="hidden md:block text-gray-900">{user?.first_name || "Usuario"}</span>
                 <ChevronDown
-                  className={`w-4 h-4 text-white transition-transform ${isDropdownOpen ? "rotate-180" : ""
+                  className={`w-4 h-4 text-gray-900 transition-transform ${isDropdownOpen ? "rotate-180" : ""
                     }`}
                 />
               </Button>
