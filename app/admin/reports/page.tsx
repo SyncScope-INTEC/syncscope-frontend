@@ -142,10 +142,6 @@ export default function ReportsPage() {
                   {profile?.firstName} {profile?.lastName}
                 </h2>
                 <div>
-                  <p className="text-xs text-gray-500">Número identificador</p>
-                  <p className="text-gray-900 font-semibold">{profile?.identifier}</p>
-                </div>
-                <div>
                   <p className="text-xs text-gray-500">Compañía</p>
                   <p className="text-gray-900 font-semibold">{profile?.company}</p>
                 </div>

@@ -1,6 +1,7 @@
 "use client"
 
 import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog"
+import Image from "next/image"
 
 interface ClientModalProps {
   isOpen: boolean
@@ -23,12 +24,13 @@ export function ClientModal({ isOpen, onClose, companyName, companyLogo }: Clien
         </DialogHeader>
 
         <div className="flex flex-col items-center space-y-4 py-4">
-          <div className="w-24 h-16 bg-gray-200 rounded flex items-center justify-center">
+          <div className="w-24 h-16 bg-gray-200 rounded flex items-center justify-center relative">
             {companyLogo ? (
-              <img
+              <Image
                 src={companyLogo || "/placeholder.svg"}
                 alt={companyName}
-                className="max-w-full max-h-full object-contain"
+                fill
+                className="object-contain"
               />
             ) : (
               <div className="w-full h-full bg-gray-300 rounded"></div>

@@ -36,23 +36,23 @@ export function AppHeader() {
   }, [isDropdownOpen])
 
   const handleLogout = async () => {
-  try {
-    if (refreshToken && sessionToken) {
-      await dispatch(logout({ refreshToken, sessionToken })).unwrap()
+    try {
+      if (refreshToken && sessionToken) {
+        await dispatch(logout({ refreshToken, sessionToken })).unwrap()
+      }
+
+      // Purgar completamente el persist
+      await persistor.purge()
+
+      toast.success("Sesión cerrada")
+      router.push("/")
+    } catch (_error) {
+      // Aún si falla, limpiar todo
+      await persistor.purge()
+      toast.error("Error al cerrar sesión")
+      router.push("/")
     }
-    
-    // Purgar completamente el persist
-    await persistor.purge()
-    
-    toast.success("Sesión cerrada")
-    router.push("/")
-  } catch (error) {
-    // Aún si falla, limpiar todo
-    await persistor.purge()
-    toast.error("Error al cerrar sesión")
-    router.push("/")
   }
-}
 
   const handleMenuItemClick = (action: () => void) => {
     setIsDropdownOpen(false)
@@ -96,9 +96,8 @@ export function AppHeader() {
                 </div>
                 <span className="hidden md:block text-white">{user?.first_name || "Usuario"}</span>
                 <ChevronDown
-                  className={`w-4 h-4 text-white transition-transform ${
-                    isDropdownOpen ? "rotate-180" : ""
-                  }`}
+                  className={`w-4 h-4 text-white transition-transform ${isDropdownOpen ? "rotate-180" : ""
+                    }`}
                 />
               </Button>
 

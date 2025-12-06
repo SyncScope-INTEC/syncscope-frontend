@@ -1,14 +1,31 @@
 "use client"
 
+import { useState } from "react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { ConfirmationModal } from "@/components/modals/confirmation-modal"
 import { useRouter } from "next/navigation"
 
 export default function ForgotPassword() {
   const router = useRouter()
+  const [email, setEmail] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+
+    // Simular envío con animación de carga (1 segundo)
+    await new Promise(resolve => setTimeout(resolve, 1000))
+
+    setIsLoading(false)
+    setShowSuccessModal(true)
+    setEmail("")
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-white">
@@ -25,13 +42,13 @@ export default function ForgotPassword() {
             <div className="relative z-10 text-center py-20">
               {/* Back Link */}
               <div className="mb-8">
-                  <Button 
-                    variant="link" 
-                    className="text-green-500 hover:text-green-600"
-                    onClick={() => router.back()}
-                  >
-                    Regresar
-                  </Button>
+                <Button
+                  variant="link"
+                  className="text-green-500 hover:text-green-600"
+                  onClick={() => router.back()}
+                >
+                  Regresar
+                </Button>
               </div>
 
               {/* Title */}
@@ -45,7 +62,7 @@ export default function ForgotPassword() {
               </p>
 
               {/* Form */}
-              <div className="max-w-md mx-auto space-y-6">
+              <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-left block text-gray-900 font-medium">
                     Correo electrónico
@@ -53,19 +70,41 @@ export default function ForgotPassword() {
                   <Input
                     id="email"
                     type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     placeholder="ejemplo@correo.com"
+                    required
                     className="w-full px-4 py-3 border-2 border-purple-200 rounded-lg focus:border-purple-400 focus:ring-0"
                   />
                 </div>
 
-                <Button className="w-full bg-green-500 hover:bg-green-600 text-white py-3 px-6 rounded-lg font-medium text-lg">
-                  Enviar solicitud
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full bg-green-500 hover:bg-green-600 text-white py-3 px-6 rounded-lg font-medium text-lg"
+                >
+                  {isLoading ? (
+                    <div className="flex items-center gap-2 justify-center">
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Enviando...
+                    </div>
+                  ) : (
+                    "Enviar solicitud"
+                  )}
                 </Button>
-              </div>
+              </form>
             </div>
           </div>
         </div>
       </main>
+
+      {/* Success Modal */}
+      <ConfirmationModal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        type="success"
+        message="Se ha enviado un enlace de recuperación a tu correo electrónico."
+      />
 
       <Footer />
     </div>

@@ -10,7 +10,6 @@ import Image from "next/image"
 import { useAppSelector } from "@/lib/store/hooks"
 import { analyticsService } from "@/lib/services/analyticsService"
 import { monitoringService } from "@/lib/services/monitoringService"
-import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 
 export default function AdminDashboard() {
@@ -57,18 +56,18 @@ export default function AdminDashboard() {
     { name: "Julia Perez", role: "Project Manager", status: "Activo", color: "text-purple-500", isCurrentUser: false },
   ]
 
-  const updates = recentSessions.length > 0 
+  const updates = recentSessions.length > 0
     ? recentSessions.map((session: any) => ({
-        text: "Sesión de desarrollo",
-        author: `${user?.first_name || 'Usuario'} ${user?.last_name || ''}`,
-        time: new Date(session.session_start).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' }),
-        timeDetail: new Date(session.session_start).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
-      }))
+      text: "Sesión de desarrollo",
+      author: `${user?.first_name || 'Usuario'} ${user?.last_name || ''}`,
+      time: new Date(session.session_start).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' }),
+      timeDetail: new Date(session.session_start).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+    }))
     : [
-        { text: "Se creó un nuevo proyecto", author: "Julia Perez", time: "19, Mayo, 2025", timeDetail: "2:00 PM" },
-        { text: "Se creó un nuevo proyecto", author: "Julia Perez", time: "19, Mayo, 2025", timeDetail: "2:00 PM" },
-        { text: "Se creó un nuevo proyecto", author: "Julia Perez", time: "19, Mayo, 2025", timeDetail: "2:00 PM" },
-      ]
+      { text: "Se creó un nuevo proyecto", author: "Julia Perez", time: "19, Mayo, 2025", timeDetail: "2:00 PM" },
+      { text: "Se creó un nuevo proyecto", author: "Julia Perez", time: "19, Mayo, 2025", timeDetail: "2:00 PM" },
+      { text: "Se creó un nuevo proyecto", author: "Julia Perez", time: "19, Mayo, 2025", timeDetail: "2:00 PM" },
+    ]
 
   return (
     <>
@@ -186,8 +185,8 @@ export default function AdminDashboard() {
                         {sessionStats?.active_sessions || 0}
                       </div>
                       <div className="text-sm opacity-90">
-                        {sessionStats?.active_sessions 
-                          ? 'Sesiones activas' 
+                        {sessionStats?.active_sessions
+                          ? 'Sesiones activas'
                           : 'Más rendimiento esta semana'}
                       </div>
                     </div>
@@ -238,11 +237,11 @@ export default function AdminDashboard() {
             <Card className="border-2 border-green-200">
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Actividad</CardTitle>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   className="text-green-600 border-green-600 bg-transparent"
-                  onClick={() => router.push('/admin/alert-history')}
+                  onClick={() => router.push('/admin/alerts-history')}
                 >
                   Ver más
                 </Button>

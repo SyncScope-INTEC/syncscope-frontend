@@ -26,10 +26,8 @@ interface ProfileCardProps {
 export function ProfileCard({
   firstName,
   lastName,
-  role,
   email,
   phone,
-  identifier,
   company,
   gitHubUser,
   gitLabUser,
@@ -98,10 +96,6 @@ export function ProfileCard({
           </div>
 
           {/* Additional Info */}
-          <div className="col-span-2">
-            <p className="text-xs text-gray-500 mb-1">Número identificador</p>
-            <p className="font-semibold text-gray-900">{identifier}</p>
-          </div>
           <div className="col-span-2">
             <p className="text-xs text-gray-500 mb-1">Compañía</p>
             <p className="font-semibold text-gray-900">{company}</p>

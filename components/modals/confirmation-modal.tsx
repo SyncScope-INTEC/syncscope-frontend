@@ -7,22 +7,27 @@ import { Check } from "lucide-react"
 interface ConfirmationModalProps {
   isOpen: boolean
   onClose: () => void
-  type: "success" | "cancel" | "password-success"
+  type: "success" | "cancel"
   message?: string
   onConfirm?: () => void
   onCancel?: () => void
 }
 
 export function ConfirmationModal({ isOpen, onClose, type, message, onConfirm, onCancel }: ConfirmationModalProps) {
-  if (type === "success" || type === "password-success") {
+  if (type === "success") {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-sm bg-white rounded-2xl border-none shadow-lg">
-          <div className="flex flex-col items-center justify-center py-8 space-y-4">
-            <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center">
-              <Check className="w-8 h-8 text-white" />
+        <DialogContent className="sm:max-w-md bg-white rounded-3xl border-none p-12">
+          <div className="flex flex-col items-center justify-center space-y-6">
+            {/* Check Icon */}
+            <div className="w-32 h-32 rounded-full bg-gradient-to-br from-lime-400 to-green-500 flex items-center justify-center">
+              <Check className="w-16 h-16 text-white stroke-[3]" />
             </div>
-            <p className="text-center text-gray-700 font-medium">{message || "La solicitud fue enviada con éxito."}</p>
+
+            {/* Message */}
+            <p className="text-center text-gray-900 text-lg font-medium">
+              {message || "La solicitud fue enviada con éxito."}
+            </p>
           </div>
         </DialogContent>
       </Dialog>
@@ -32,20 +37,25 @@ export function ConfirmationModal({ isOpen, onClose, type, message, onConfirm, o
   if (type === "cancel") {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-sm bg-white rounded-2xl border-none shadow-lg">
-          <div className="flex flex-col items-center justify-center py-8 space-y-6">
-            <h3 className="text-lg font-semibold text-gray-900 text-center">¿Seguro que desea cancelar?</h3>
-            <div className="flex gap-3">
+        <DialogContent className="sm:max-w-md bg-white rounded-3xl border-none p-12">
+          <div className="flex flex-col items-center justify-center space-y-8">
+            {/* Title */}
+            <h2 className="text-center text-gray-900 text-2xl font-bold">
+              ¿Seguro que desea cancelar?
+            </h2>
+
+            {/* Buttons */}
+            <div className="flex items-center gap-4">
               <Button
                 onClick={onCancel || onClose}
                 variant="outline"
-                className="px-6 py-2 border-purple-200 text-purple-600 hover:bg-purple-50 rounded-full bg-transparent"
+                className="px-12 py-6 rounded-full border-2 border-purple-400 text-purple-600 hover:bg-purple-50 text-lg font-medium"
               >
                 No
               </Button>
               <Button
                 onClick={onConfirm}
-                className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-full"
+                className="px-12 py-6 rounded-full bg-purple-600 hover:bg-purple-700 text-white text-lg font-medium"
               >
                 Sí
               </Button>

@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -7,8 +8,17 @@ import { Badge } from "@/components/ui/badge"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Search, Filter, Play, FileText, Download } from "lucide-react"
+import { DemoModal } from "@/components/modals/demo-modal"
+import { ConfirmationModal } from "@/components/modals/confirmation-modal"
 
 export default function ServicesPage() {
+  const [showDemoModal, setShowDemoModal] = useState(false)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+
+  const handleDemoSuccess = () => {
+    setShowSuccessModal(true)
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white">
       {/* Header */}
@@ -27,7 +37,10 @@ export default function ServicesPage() {
               Descubre cómo optimizar tu equipo de desarrollo con SyncScope
             </h1>
 
-            <Button className="bg-purple-500 hover:bg-purple-600 text-white px-8 py-3 text-lg rounded-full">
+            <Button
+              onClick={() => setShowDemoModal(true)}
+              className="bg-purple-500 hover:bg-purple-600 text-white px-8 py-3 text-lg rounded-full"
+            >
               Solicitar demo
             </Button>
           </div>
@@ -156,6 +169,21 @@ export default function ServicesPage() {
           Auditoría automatizada, métricas claras y decisiones inteligentes en un solo lugar.
         </p>
       </section>
+
+      {/* Demo Modal */}
+      <DemoModal
+        isOpen={showDemoModal}
+        onClose={() => setShowDemoModal(false)}
+        onSuccess={handleDemoSuccess}
+      />
+
+      {/* Success Modal */}
+      <ConfirmationModal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        type="success"
+        message="La solicitud fue enviada con éxito."
+      />
 
       {/* Footer */}
       <Footer />

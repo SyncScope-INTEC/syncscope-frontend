@@ -93,7 +93,7 @@ export default function RegisterPage() {
       await dispatch(register(formData)).unwrap()
       toast.success("¡Cuenta creada exitosamente!")
       router.push("/admin/dashboard")
-    } catch (err) {
+    } catch (_err) {
       // El error ya se maneja en el useEffect
     }
   }

@@ -1,13 +1,63 @@
+"use client"
+
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Check } from "lucide-react"
+import { ConfirmationModal } from "@/components/modals/confirmation-modal"
+
+type PlanType = 'starter' | 'enterprise' | 'growth'
+
+interface PlanInfo {
+  name: string
+  price: string
+}
+
+const planDetails: Record<PlanType, PlanInfo> = {
+  starter: { name: 'Starter', price: '$19/mes' },
+  enterprise: { name: 'Enterprise', price: '$69/mes' },
+  growth: { name: 'Growth', price: '$149/mes' }
+}
 
 export default function PricingPage() {
+  const [selectedPlan, setSelectedPlan] = useState<PlanType | null>(null)
+  const [showCancelModal, setShowCancelModal] = useState(false)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleSelectPlan = (plan: PlanType) => {
+    setSelectedPlan(plan)
+    // Scroll suave al formulario
+    setTimeout(() => {
+      document.getElementById('signup-form')?.scrollIntoView({ behavior: 'smooth' })
+    }, 100)
+  }
+
+  const handleCancelClick = () => {
+    setShowCancelModal(true)
+  }
+
+  const handleConfirmCancel = () => {
+    setShowCancelModal(false)
+    setSelectedPlan(null)
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+
+    // Simular envío con animación de carga (1 segundo)
+    await new Promise(resolve => setTimeout(resolve, 1000))
+
+    setIsLoading(false)
+    setSelectedPlan(null)
+    setShowSuccessModal(true)
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white">
       {/* Header */}
@@ -70,7 +120,12 @@ export default function PricingPage() {
                 </li>
               </ul>
 
-              <Button className="w-full bg-green-400 hover:bg-green-500 text-white rounded-full">Iniciar</Button>
+              <Button
+                onClick={() => handleSelectPlan('starter')}
+                className="w-full bg-green-400 hover:bg-green-500 text-white rounded-full"
+              >
+                Iniciar
+              </Button>
             </div>
           </Card>
 
@@ -111,7 +166,12 @@ export default function PricingPage() {
                 </li>
               </ul>
 
-              <Button className="w-full bg-green-400 hover:bg-green-500 text-white rounded-full">Iniciar</Button>
+              <Button
+                onClick={() => handleSelectPlan('enterprise')}
+                className="w-full bg-green-400 hover:bg-green-500 text-white rounded-full"
+              >
+                Iniciar
+              </Button>
             </div>
           </Card>
 
@@ -150,97 +210,128 @@ export default function PricingPage() {
                 </li>
               </ul>
 
-              <Button className="w-full bg-green-400 hover:bg-green-500 text-white rounded-full">Iniciar</Button>
+              <Button
+                onClick={() => handleSelectPlan('growth')}
+                className="w-full bg-green-400 hover:bg-green-500 text-white rounded-full"
+              >
+                Iniciar
+              </Button>
             </div>
           </Card>
         </div>
       </section>
 
-      {/* Signup Form Section */}
-      <section className="px-6 py-16 max-w-4xl mx-auto">
-        <div className="space-y-8">
-          <h2 className="text-3xl font-bold text-gray-900 text-left">Formulario de inicio</h2>
+      {/* Signup Form Section - Solo visible cuando se selecciona un plan */}
+      {selectedPlan && (
+        <section id="signup-form" className="px-6 py-16 max-w-4xl mx-auto">
+          <div className="space-y-8">
+            <div className="text-center">
+              <h2 className="text-3xl font-bold text-gray-900">
+                Formulario de inicio — Plan {planDetails[selectedPlan].name}
+              </h2>
+              <p className="text-gray-600 mt-2">{planDetails[selectedPlan].price}</p>
+            </div>
 
-          <Card className="p-8 border-2 border-green-400 bg-white/80 backdrop-blur">
-            <form className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="identifier" className="text-sm font-medium text-gray-700">
-                    Identificador
-                  </Label>
-                  <Input
-                    id="identifier"
-                    type="text"
-                    className="border-purple-200 focus:border-purple-400 focus:ring-purple-400"
-                  />
+            <Card className="p-8 border-2 border-green-400 bg-white/80 backdrop-blur">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="identifier" className="text-sm font-medium text-gray-700">
+                      Identificador
+                    </Label>
+                    <Input
+                      id="identifier"
+                      type="text"
+                      required
+                      className="border-purple-200 focus:border-purple-400 focus:ring-purple-400"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="company" className="text-sm font-medium text-gray-700">
+                      Nombre de la empresa
+                    </Label>
+                    <Input
+                      id="company"
+                      type="text"
+                      required
+                      className="border-purple-200 focus:border-purple-400 focus:ring-purple-400"
+                    />
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="company" className="text-sm font-medium text-gray-700">
-                    Nombre de la empresa
-                  </Label>
-                  <Input
-                    id="company"
-                    type="text"
-                    className="border-purple-200 focus:border-purple-400 focus:ring-purple-400"
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
+                      Número telefónico
+                    </Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      required
+                      className="border-purple-200 focus:border-purple-400 focus:ring-purple-400"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+                      Correo electrónico
+                    </Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="ejemplo@correo.com"
+                      required
+                      className="border-purple-200 focus:border-purple-400 focus:ring-purple-400"
+                    />
+                  </div>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
-                    Número telefónico
-                  </Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    className="border-purple-200 focus:border-purple-400 focus:ring-purple-400"
-                  />
+                <div className="flex justify-end space-x-4 pt-4">
+                  <Button
+                    type="button"
+                    onClick={handleCancelClick}
+                    variant="outline"
+                    disabled={isLoading}
+                    className="px-8 bg-green-400 hover:bg-green-500 text-white border-green-400 hover:border-green-500"
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="px-8 bg-purple-500 hover:bg-purple-600 text-white"
+                  >
+                    {isLoading ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Enviando...
+                      </div>
+                    ) : (
+                      "Enviar"
+                    )}
+                  </Button>
                 </div>
+              </form>
+            </Card>
+          </div>
+        </section>
+      )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-medium text-gray-700">
-                    Correo electrónico
-                  </Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="ejemplo@correo.com"
-                    className="border-purple-200 focus:border-purple-400 focus:ring-purple-400"
-                  />
-                </div>
-              </div>
+      {/* Modals */}
+      <ConfirmationModal
+        isOpen={showCancelModal}
+        onClose={() => setShowCancelModal(false)}
+        type="cancel"
+        onConfirm={handleConfirmCancel}
+      />
 
-              <div className="space-y-2">
-                <Label htmlFor="plan" className="text-sm font-medium text-gray-700">
-                  Plan de suscripción
-                </Label>
-                <Select>
-                  <SelectTrigger className="border-purple-200 focus:border-purple-400 focus:ring-purple-400">
-                    <SelectValue placeholder="Selecciona un plan" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="starter">Starter - $19/mes</SelectItem>
-                    <SelectItem value="enterprise">Enterprise - $69/mes</SelectItem>
-                    <SelectItem value="growth">Growth - $149/mes</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex justify-end space-x-4 pt-4">
-                <Button
-                  variant="outline"
-                  className="px-8 bg-green-400 hover:bg-green-500 text-white border-green-400 hover:border-green-500"
-                >
-                  Cancelar
-                </Button>
-                <Button className="px-8 bg-purple-500 hover:bg-purple-600 text-white">Enviar</Button>
-              </div>
-            </form>
-          </Card>
-        </div>
-      </section>
+      <ConfirmationModal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        type="success"
+        message="La solicitud fue enviada con éxito."
+      />
 
       {/* Footer */}
       <Footer />

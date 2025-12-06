@@ -88,11 +88,11 @@ export const register = createAsyncThunk(
 
 export const logout = createAsyncThunk(
   'auth/logout',
-  async ({ refreshToken, sessionToken }: { refreshToken: string; sessionToken: string }, { rejectWithValue }) => {
+  async ({ refreshToken, sessionToken }: { refreshToken: string; sessionToken: string }) => {
     try {
       await authService.logout(refreshToken, sessionToken)
       return true
-    } catch (error: any) {
+    } catch (_error: any) {
       // Aún si falla el API, limpiamos el estado local
       return true
     }
@@ -130,7 +130,7 @@ const authSlice = createSlice({
       state.sessionToken = action.payload.sessionToken
       state.isAuthenticated = true
     },
-    logoutLocal: (state) => {
+    logoutLocal: () => {
       return initialState
     },
   },
@@ -178,10 +178,10 @@ const authSlice = createSlice({
       .addCase(logout.pending, (state) => {
         state.loading = true
       })
-      .addCase(logout.fulfilled, (state) => {
+      .addCase(logout.fulfilled, () => {
         return initialState
       })
-      .addCase(logout.rejected, (state) => {
+      .addCase(logout.rejected, () => {
         return initialState
       })
 
@@ -195,7 +195,7 @@ const authSlice = createSlice({
         state.user = action.payload.user
         state.isAuthenticated = true
       })
-      .addCase(verifyToken.rejected, (state) => {
+      .addCase(verifyToken.rejected, () => {
         return initialState
       })
 

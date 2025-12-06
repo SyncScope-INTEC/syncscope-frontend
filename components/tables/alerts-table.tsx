@@ -19,17 +19,6 @@ interface AlertsTableProps {
 }
 
 export function AlertsTable({ alerts = [], isLoading = false }: AlertsTableProps) {
-  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
-
-  const toggleRow = (id: string) => {
-    const newExpanded = new Set(expandedRows)
-    if (newExpanded.has(id)) {
-      newExpanded.delete(id)
-    } else {
-      newExpanded.add(id)
-    }
-    setExpandedRows(newExpanded)
-  }
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {

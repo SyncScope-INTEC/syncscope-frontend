@@ -32,7 +32,7 @@ export default function AdminProfilePage() {
             if (imageData?.url) {
               profileImageUrl = imageData.url
             }
-          } catch (imgError) {
+          } catch (_imgError) {
             console.log('No profile image found, using default')
           }
         }
@@ -72,17 +72,17 @@ export default function AdminProfilePage() {
           status: profileData.is_active ? 'Activo' : 'Inactivo',
           createdDate: profileData.created_at
             ? new Date(profileData.created_at).toLocaleDateString('es-ES', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-              })
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+            })
             : new Date().toLocaleDateString('es-ES'),
           lastUpdated: profileData.updated_at
             ? new Date(profileData.updated_at).toLocaleDateString('es-ES', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-              })
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+            })
             : new Date().toLocaleDateString('es-ES'),
           profileImage: profileImageUrl,
         })
