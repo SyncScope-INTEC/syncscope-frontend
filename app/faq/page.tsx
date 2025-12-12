@@ -4,12 +4,12 @@ import { ChevronDown, CheckCircle, Clock, BarChart3, Bell, Link, Lightbulb } fro
 
 export default function FAQPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-green-50">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-brand-light/30">
       <Header />
 
       {/* Hero Section */}
       <section className="relative px-6 py-16 max-w-7xl mx-auto">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-green-200/30 to-transparent rounded-full blur-3xl"></div>
+        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-brand-light/50 to-transparent rounded-full blur-3xl"></div>
 
         <div className="relative max-w-4xl">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 text-balance">
@@ -37,7 +37,7 @@ export default function FAQPage() {
             >
               <div className="flex items-center justify-between cursor-pointer">
                 <h3 className="text-lg font-semibold text-gray-900">{question}</h3>
-                <ChevronDown className="w-5 h-5 text-green-500" />
+                <ChevronDown className="w-5 h-5 text-brand-dark" />
               </div>
             </div>
           ))}
@@ -50,8 +50,8 @@ export default function FAQPage() {
 
         <div className="grid md:grid-cols-3 gap-8 mb-12">
           <div className="bg-white rounded-xl p-8 border border-purple-200 hover:shadow-lg transition-shadow">
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-6">
-              <CheckCircle className="w-6 h-6 text-green-600" />
+            <div className="w-12 h-12 bg-brand-light rounded-lg flex items-center justify-center mb-6">
+              <CheckCircle className="w-6 h-6 text-brand-dark" />
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-4">Auditoría de Código Automatizada</h3>
             <p className="text-gray-600">
@@ -60,8 +60,8 @@ export default function FAQPage() {
           </div>
 
           <div className="bg-white rounded-xl p-8 border border-purple-200 hover:shadow-lg transition-shadow">
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-6">
-              <Clock className="w-6 h-6 text-green-600" />
+            <div className="w-12 h-12 bg-brand-light rounded-lg flex items-center justify-center mb-6">
+              <Clock className="w-6 h-6 text-brand-dark" />
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-4">Monitoreo de Tiempos en Tiempo Real</h3>
             <p className="text-gray-600">
@@ -71,8 +71,8 @@ export default function FAQPage() {
           </div>
 
           <div className="bg-white rounded-xl p-8 border border-purple-200 hover:shadow-lg transition-shadow">
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-6">
-              <BarChart3 className="w-6 h-6 text-green-600" />
+            <div className="w-12 h-12 bg-brand-light rounded-lg flex items-center justify-center mb-6">
+              <BarChart3 className="w-6 h-6 text-brand-dark" />
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-4">Reportes Inteligentes de Productividad</h3>
             <p className="text-gray-600">
@@ -83,8 +83,8 @@ export default function FAQPage() {
 
         <div className="grid md:grid-cols-3 gap-8">
           <div className="bg-white rounded-xl p-8 border border-purple-200 hover:shadow-lg transition-shadow">
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-6">
-              <Bell className="w-6 h-6 text-green-600" />
+            <div className="w-12 h-12 bg-brand-light rounded-lg flex items-center justify-center mb-6">
+              <Bell className="w-6 h-6 text-brand-dark" />
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-4">Sistema de Alertas Proactivas</h3>
             <p className="text-gray-600">
@@ -93,8 +93,8 @@ export default function FAQPage() {
           </div>
 
           <div className="bg-white rounded-xl p-8 border border-purple-200 hover:shadow-lg transition-shadow">
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-6">
-              <Link className="w-6 h-6 text-green-600" />
+            <div className="w-12 h-12 bg-brand-light rounded-lg flex items-center justify-center mb-6">
+              <Link className="w-6 h-6 text-brand-dark" />
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-4">Integración con GitHub, GitLab y Jira</h3>
             <p className="text-gray-600">
@@ -103,8 +103,8 @@ export default function FAQPage() {
           </div>
 
           <div className="bg-white rounded-xl p-8 border border-purple-200 hover:shadow-lg transition-shadow">
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-6">
-              <Lightbulb className="w-6 h-6 text-green-600" />
+            <div className="w-12 h-12 bg-brand-light rounded-lg flex items-center justify-center mb-6">
+              <Lightbulb className="w-6 h-6 text-brand-dark" />
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-4">Análisis Predictivo de Proyectos</h3>
             <p className="text-gray-600">

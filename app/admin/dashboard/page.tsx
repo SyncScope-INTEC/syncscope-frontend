@@ -10,6 +10,7 @@ import Image from "next/image"
 import { useAppSelector } from "@/lib/store/hooks"
 import { analyticsService } from "@/lib/services/analyticsService"
 import { monitoringService } from "@/lib/services/monitoringService"
+import { authService } from "@/lib/services/authService"
 import { useRouter } from "next/navigation"
 
 export default function AdminDashboard() {
@@ -19,24 +20,61 @@ export default function AdminDashboard() {
   const [sessionStats, setSessionStats] = useState<any>(null)
   const [recentSessions, setRecentSessions] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [employees, setEmployees] = useState<any[]>([]) // Changed to useState for employees
 
   useEffect(() => {
     async function fetchDashboardData() {
       try {
         setIsLoading(true)
 
-        const [dashboard, stats, sessions] = await Promise.all([
+        const [dashboard, stats, sessions, supervisedUsers] = await Promise.all([
           analyticsService.getDashboard().catch(() => null),
           monitoringService.getUserSessionStats(user?.id || '').catch(() => null),
           monitoringService.getUserSessions(user?.id || '', { limit: 3 }).catch(() => []),
+          authService.getSupervisedUsers().catch(() => []),
         ])
 
         setDashboardData(dashboard)
         setSessionStats(stats)
         setRecentSessions(sessions || [])
+
+        // Mapear usuarios supervisados a formato de empleados
+        // FILTRAR por empresa del usuario actual (temporal hasta que backend lo haga)
+        const filteredSupervision = supervisedUsers?.filter(
+          (supervision: any) =>
+            supervision.supervisee?.company?.id === user?.company?.id
+        ) || []
+
+        const employeesData = filteredSupervision.map((supervision: any) => ({
+          name: `${supervision.supervisee?.first_name || 'Usuario'} ${supervision.supervisee?.last_name || ''}`,
+          role: supervision.supervisee?.role || 'Developer',
+          status: supervision.supervisee?.is_active ? 'Activo' : 'Inactivo',
+          color: supervision.supervisee?.is_active ? 'text-purple-500' : 'text-gray-400',
+          isCurrentUser: false,
+        }))
+
+        // Agregar el usuario actual al inicio
+        const currentUserEmployee = {
+          name: `${user?.first_name || 'Usuario'} ${user?.last_name || ''}`,
+          role: user?.role || 'Project Manager',
+          status: 'Activo',
+          color: 'text-purple-500',
+          isCurrentUser: true,
+        }
+
+        setEmployees([currentUserEmployee, ...employeesData])
       } catch (error: any) {
         console.error('Error fetching dashboard:', error)
-        // No mostrar error, solo usar datos mock
+        // Fallback a datos mock si falla
+        setEmployees([
+          {
+            name: `${user?.first_name || 'Usuario'} ${user?.last_name || ''}`,
+            role: user?.role || 'Project Manager',
+            status: 'Activo',
+            color: 'text-purple-500',
+            isCurrentUser: true,
+          },
+        ])
       } finally {
         setIsLoading(false)
       }
@@ -47,14 +85,7 @@ export default function AdminDashboard() {
     }
   }, [user])
 
-  // Mock employees data
-  const employees = [
-    { name: `${user?.first_name || 'Usuario'} ${user?.last_name || ''}`, role: user?.role || "Project Manager", status: "Activo", color: "text-purple-500", isCurrentUser: true },
-    { name: "Julia Perez", role: "Project Manager", status: "Activo", color: "text-purple-500", isCurrentUser: false },
-    { name: "Julia Perez", role: "Project Manager", status: "Inactivo", color: "text-gray-400", isCurrentUser: false },
-    { name: "Julio Perez", role: "Project Manager", status: "Inactivo", color: "text-gray-400", isCurrentUser: false },
-    { name: "Julia Perez", role: "Project Manager", status: "Activo", color: "text-purple-500", isCurrentUser: false },
-  ]
+
 
   const updates = recentSessions.length > 0
     ? recentSessions.map((session: any) => ({
@@ -95,7 +126,7 @@ export default function AdminDashboard() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Employees Section */}
-            <Card className="border-2 border-green-200">
+            <Card className="border-2 border-brand-light">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   Empleados
@@ -113,7 +144,7 @@ export default function AdminDashboard() {
                 {employees.map((employee, index) => (
                   <div key={index} className="flex items-center gap-3">
                     {employee.isCurrentUser ? (
-                      <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                      <div className="w-8 h-8 bg-brand rounded-full flex items-center justify-center text-brand-foreground font-semibold text-sm">
                         {user?.first_name?.[0]?.toUpperCase() || 'U'}
                       </div>
                     ) : (
@@ -234,13 +265,13 @@ export default function AdminDashboard() {
             </div>
 
             {/* Activity Section */}
-            <Card className="border-2 border-green-200">
+            <Card className="border-2 border-brand-light">
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Actividad</CardTitle>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="text-green-600 border-green-600 bg-transparent"
+                  className="text-brand-dark border-brand-dark bg-transparent"
                   onClick={() => router.push('/admin/alerts-history')}
                 >
                   Ver más
@@ -316,7 +347,7 @@ export default function AdminDashboard() {
 
                 {/* Bottom Stats */}
                 <div className="flex gap-2 flex-wrap">
-                  <Badge className="bg-green-500 text-white text-xs">
+                  <Badge className="bg-brand text-brand-foreground text-xs">
                     {sessionStats?.avg_session_duration_minutes
                       ? `${Math.floor(sessionStats.avg_session_duration_minutes / 60)}h ${Math.floor(sessionStats.avg_session_duration_minutes % 60)}m`
                       : '7h 43m'}{' '}

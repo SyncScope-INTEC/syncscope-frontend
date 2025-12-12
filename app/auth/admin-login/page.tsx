@@ -65,10 +65,10 @@ export default function AdminLogin() {
   const handleGitHubLogin = async () => {
     try {
       setGithubLoading(true)
-      
+
       // Obtener URL de autenticación de GitHub
       const response = await authService.getGitHubAuthUrl()
-      
+
       if (response?.auth_url) {
         // Redirigir a GitHub OAuth
         window.location.href = response.auth_url
@@ -150,7 +150,7 @@ export default function AdminLogin() {
 
                 {/* Forgot Password Link */}
                 <div className="text-right">
-                  <Link href="/auth/forgot-password" className="text-green-500 hover:text-green-600 text-sm">
+                  <Link href="/auth/forgot-password" className="text-brand-dark hover:text-brand-hover text-sm">
                     ¿Olvidaste tu contraseña?
                   </Link>
                 </div>
@@ -160,7 +160,7 @@ export default function AdminLogin() {
                   <Button
                     type="button"
                     onClick={handleGitHubLogin}
-                    className="flex-1 bg-green-500 hover:bg-green-600 text-white py-3 px-6 rounded-lg font-medium flex items-center justify-center gap-2"
+                    className="flex-1 bg-brand hover:bg-brand-hover text-brand-foreground py-3 px-6 rounded-lg font-medium flex items-center justify-center gap-2"
                     disabled={loading || githubLoading}
                   >
                     <Github className="w-5 h-5" />

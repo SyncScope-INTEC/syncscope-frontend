@@ -22,8 +22,8 @@ export default function EmployeeDashboard() {
 
         {/* Filter Tabs */}
         <div className="flex items-center gap-4 mb-8">
-          <Badge className="bg-green-600 text-white px-4 py-2 rounded-full">Fecha</Badge>
-          <Badge className="bg-green-600 text-white px-4 py-2 rounded-full">Proyecto</Badge>
+          <Badge className="bg-brand-dark text-white px-4 py-2 rounded-full">Fecha</Badge>
+          <Badge className="bg-brand-dark text-white px-4 py-2 rounded-full">Proyecto</Badge>
           <Button variant="ghost" size="icon" className="ml-auto">
             <Filter className="w-5 h-5 text-gray-600" />
           </Button>

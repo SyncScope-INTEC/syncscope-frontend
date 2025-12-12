@@ -83,4 +83,58 @@ export const monitoringService = {
     const response = await api.post('/metrics/code/', data)
     return response.data
   },
+
+  // Activities
+  getAllActivities: async (params?: {
+    start_date?: string
+    end_date?: string
+    user_id?: string
+    activity_type?: string
+  }) => {
+    const response = await api.get('/activities/', { params })
+    return response.data
+  },
+
+  createActivity: async (data: {
+    session: string
+    activity_type: string
+    description?: string
+    duration_seconds?: number
+    metadata?: any
+  }) => {
+    const response = await api.post('/activities/', data)
+    return response.data
+  },
+
+  // Events
+  getAllEvents: async (params?: {
+    start_date?: string
+    end_date?: string
+    user_id?: string
+    event_type?: string
+  }) => {
+    const response = await api.get('/events/', { params })
+    return response.data
+  },
+
+  createEvent: async (data: {
+    session: string
+    event_type: string
+    description?: string
+    metadata?: any
+  }) => {
+    const response = await api.post('/events/', data)
+    return response.data
+  },
+
+  // Metrics
+  getAllMetrics: async (params?: {
+    start_date?: string
+    end_date?: string
+    user_id?: string
+    metric_type?: string
+  }) => {
+    const response = await api.get('/metrics/', { params })
+    return response.data
+  },
 }

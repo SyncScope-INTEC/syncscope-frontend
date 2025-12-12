@@ -48,7 +48,7 @@ export function PlanModal({ isOpen, onClose, planName, planDescription, price, b
           <div className="flex justify-end pt-4">
             <Button
               onClick={onStart}
-              className="bg-transparent text-green-500 hover:bg-green-50 font-medium"
+              className="bg-transparent text-brand-dark hover:bg-brand-light font-medium"
               variant="ghost"
             >
               Iniciar

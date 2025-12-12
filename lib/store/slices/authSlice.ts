@@ -7,8 +7,15 @@ interface User {
   email: string
   first_name: string
   last_name: string
-  company_name: string
+  company_name?: string
   role: string
+  company?: {
+    id: string
+    name: string
+    domain?: string
+    industry?: string
+    size?: string
+  }
 }
 
 interface AuthState {

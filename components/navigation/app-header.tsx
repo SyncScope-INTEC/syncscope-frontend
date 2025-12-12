@@ -80,7 +80,7 @@ export function AppHeader() {
         <div className="flex items-center gap-8">
           <span className="text-gray-900 font-medium">Empleados</span>
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" className="text-green-600 hover:bg-gray-100">
+            <Button variant="ghost" size="icon" className="text-brand-dark hover:bg-gray-100">
               <Bell className="w-5 h-5" />
             </Button>
 
@@ -91,10 +91,13 @@ export function AppHeader() {
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 className="text-gray-900 hover:bg-gray-100 flex items-center gap-2"
               >
-                <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                <div className="w-8 h-8 bg-brand rounded-full flex items-center justify-center text-brand-foreground font-semibold text-sm">
                   {user?.first_name?.[0]?.toUpperCase() || "U"}
                 </div>
                 <span className="hidden md:block text-gray-900">{user?.first_name || "Usuario"}</span>
+                {user?.company_name && (
+                  <span className="hidden lg:block text-xs text-gray-500">({user.company_name})</span>
+                )}
                 <ChevronDown
                   className={`w-4 h-4 text-gray-900 transition-transform ${isDropdownOpen ? "rotate-180" : ""
                     }`}

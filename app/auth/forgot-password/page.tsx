@@ -44,7 +44,7 @@ export default function ForgotPassword() {
               <div className="mb-8">
                 <Button
                   variant="link"
-                  className="text-green-500 hover:text-green-600"
+                  className="text-brand-dark hover:text-brand-hover"
                   onClick={() => router.back()}
                 >
                   Regresar
@@ -81,7 +81,7 @@ export default function ForgotPassword() {
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-green-500 hover:bg-green-600 text-white py-3 px-6 rounded-lg font-medium text-lg"
+                  className="w-full bg-brand hover:bg-brand-hover text-brand-foreground py-3 px-6 rounded-lg font-medium text-lg"
                 >
                   {isLoading ? (
                     <div className="flex items-center gap-2 justify-center">

@@ -46,9 +46,8 @@ export function AlertFilters({ onFilterChange }: AlertFiltersProps) {
           <Badge
             key={status}
             onClick={() => handleStatusToggle(status)}
-            className={`cursor-pointer ${
-              filters.status === status ? "bg-green-600 text-white" : "bg-green-400 text-black hover:bg-green-500"
-            }`}
+            className={`cursor-pointer ${filters.status === status ? "bg-brand-dark text-white" : "bg-brand text-brand-foreground hover:bg-brand-hover"
+              }`}
           >
             {status}
           </Badge>
@@ -61,9 +60,8 @@ export function AlertFilters({ onFilterChange }: AlertFiltersProps) {
           <Badge
             key={project}
             onClick={() => handleProjectToggle(project)}
-            className={`cursor-pointer ${
-              filters.project === project ? "bg-green-600 text-white" : "bg-green-400 text-black hover:bg-green-500"
-            }`}
+            className={`cursor-pointer ${filters.project === project ? "bg-brand-dark text-white" : "bg-brand text-brand-foreground hover:bg-brand-hover"
+              }`}
           >
             {project}
           </Badge>
@@ -78,7 +76,7 @@ export function AlertFilters({ onFilterChange }: AlertFiltersProps) {
           onChange={(e) => handleSearchChange(e.target.value)}
           className="border-purple-300"
         />
-        <Button size="icon" variant="outline" className="bg-green-400 hover:bg-green-500 text-black">
+        <Button size="icon" variant="outline" className="bg-brand hover:bg-brand-hover text-brand-foreground">
           <Search className="w-4 h-4" />
         </Button>
         <Button size="icon" variant="outline">

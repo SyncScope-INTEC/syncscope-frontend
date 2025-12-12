@@ -94,7 +94,7 @@ export default function AlertsHistoryPage() {
   const handleExportPDF = async () => {
     try {
       toast.info('Generando reporte...')
-      
+
       // Crear reporte
       const report = await analyticsService.createReport({
         name: `Alertas - ${new Date().toLocaleDateString('es-ES')}`,
@@ -104,7 +104,7 @@ export default function AlertsHistoryPage() {
 
       // Exportar a PDF
       const exported = await analyticsService.exportReport(report.id, 'pdf', true, true)
-      
+
       if (exported?.url) {
         window.open(exported.url, '_blank')
         toast.success('Reporte generado exitosamente')
@@ -139,7 +139,7 @@ export default function AlertsHistoryPage() {
             <PerformanceChartCard data={performanceData} />
 
             {/* Performance Status */}
-            <Card className="p-6 bg-green-400 text-black">
+            <Card className="p-6 bg-brand text-brand-foreground">
               <p className="text-sm font-semibold">
                 {alerts.length > 0
                   ? `${alerts.filter((a) => a.severity === 'alto').length} alertas de alta prioridad`

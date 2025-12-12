@@ -27,10 +27,11 @@ export default function ReportsPage() {
         setIsLoading(true)
 
         // Obtener datos en paralelo
-        const [profileData, dashboard, stats] = await Promise.all([
+        const [profileData, dashboard, stats, supervisedUsers] = await Promise.all([
           authService.getProfile().catch(() => null),
           analyticsService.getDashboard().catch(() => null),
           monitoringService.getUserSessionStats(user?.id || '').catch(() => null),
+          authService.getSupervisedUsers().catch(() => []),
         ])
 
         setProfile({
@@ -47,14 +48,37 @@ export default function ReportsPage() {
         setDashboardData(dashboard)
         setSessionStats(stats)
 
-        // Mock team data - TODO: Implementar endpoint de team
+        // Mapear usuarios supervisados a formato de equipo
+        // FILTRAR por empresa del usuario actual (temporal hasta que backend lo haga)
+        const filteredSupervision = supervisedUsers?.filter(
+          (supervision: any) =>
+            supervision.supervisee?.company?.id === profileData?.company?.id ||
+            supervision.supervisee?.company?.id === user?.company?.id
+        ) || []
+
+        const teamData = filteredSupervision.map((supervision: any) => ({
+          id: supervision.supervisee?.id || supervision.id,
+          name: `${supervision.supervisee?.first_name || 'Usuario'} ${supervision.supervisee?.last_name || ''}`,
+          role: supervision.supervisee?.role || 'Developer',
+          lastActivity: supervision.supervisee?.last_login
+            ? new Date(supervision.supervisee.last_login).toLocaleString('es-ES', {
+              day: '2-digit',
+              month: 'short',
+              hour: '2-digit',
+              minute: '2-digit',
+            })
+            : 'Sin actividad',
+        }))
+
+        // Agregar el usuario actual al equipo
         setTeam([
           {
-            id: "1",
-            name: profileData?.first_name || "Usuario",
-            role: profileData?.role || "Developer",
-            lastActivity: "Hoy, 12:00PM",
+            id: user?.id || '0',
+            name: profileData?.first_name || 'Usuario',
+            role: profileData?.role || 'Developer',
+            lastActivity: 'Hoy, 12:00PM',
           },
+          ...teamData,
         ])
       } catch (error: any) {
         console.error('Error fetching data:', error)
@@ -111,8 +135,8 @@ export default function ReportsPage() {
 
         {/* Filters */}
         <div className="flex gap-2 mb-8">
-          <Badge className="bg-green-400 text-black cursor-pointer hover:bg-green-500">Fecha</Badge>
-          <Badge className="bg-green-400 text-black cursor-pointer hover:bg-green-500">Proyecto</Badge>
+          <Badge className="bg-brand text-brand-foreground cursor-pointer hover:bg-brand-hover">Fecha</Badge>
+          <Badge className="bg-brand text-brand-foreground cursor-pointer hover:bg-brand-hover">Proyecto</Badge>
         </div>
 
         {/* Main Content */}

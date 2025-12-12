@@ -121,9 +121,21 @@ export default function AdminProfilePage() {
     }
   }, [user])
 
-  const handleSaveProfile = (data: { email: string; phone: string; timezone: string }) => {
-    setProfile({ ...profile, ...data })
-    toast.success('Perfil actualizado exitosamente')
+  const handleSaveProfile = async (data: { email: string; phone: string; timezone: string }) => {
+    try {
+      // Actualizar perfil en el backend
+      await authService.updateProfile({
+        timezone: data.timezone,
+        // Note: email y phone no están en el endpoint de updateProfile según la API
+        // Solo se puede actualizar first_name, last_name, timezone
+      })
+
+      setProfile({ ...profile, ...data })
+      toast.success('Perfil actualizado exitosamente')
+    } catch (error: any) {
+      console.error('Error updating profile:', error)
+      toast.error('Error al actualizar el perfil')
+    }
   }
 
   const handleViewMoreActivities = () => {

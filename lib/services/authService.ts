@@ -134,4 +134,41 @@ export const authService = {
     const response = await api.get(`/github/callback/?code=${code}&state=${state}`)
     return response.data
   },
+
+  // Session Management
+  getSessions: async () => {
+    const response = await api.get('/sessions/')
+    return response.data
+  },
+
+  deleteSessions: async () => {
+    const response = await api.delete('/sessions/')
+    return response.data
+  },
+
+  // Supervision
+  getSupervisedUsers: async () => {
+    const response = await api.get('/supervised-users/')
+    return response.data
+  },
+
+  createSupervision: async (data: { supervisor_id: string; supervisee_id: string }) => {
+    const response = await api.post('/supervised-users/', data)
+    return response.data
+  },
+
+  getSupervision: async (id: string) => {
+    const response = await api.get(`/supervised-users/${id}/`)
+    return response.data
+  },
+
+  updateSupervision: async (id: string, data: any) => {
+    const response = await api.put(`/supervised-users/${id}/`, data)
+    return response.data
+  },
+
+  deleteSupervision: async (id: string) => {
+    const response = await api.delete(`/supervised-users/${id}/`)
+    return response.data
+  },
 }

@@ -54,10 +54,10 @@ export default function ServicesPage() {
           <div className="flex flex-col lg:flex-row gap-4 mb-6">
             {/* Filter Tabs */}
             <div className="flex gap-2">
-              <Badge className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-full">
+              <Badge className="bg-brand-dark hover:bg-brand-hover text-white px-4 py-2 rounded-full">
                 Equipo interno
               </Badge>
-              <Badge className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-full">Híbrido</Badge>
+              <Badge className="bg-brand-dark hover:bg-brand-hover text-white px-4 py-2 rounded-full">Híbrido</Badge>
             </div>
 
             {/* Filter and Search */}
@@ -68,7 +68,7 @@ export default function ServicesPage() {
               <div className="relative">
                 <Input
                   placeholder="Julio"
-                  className="pl-8 bg-green-600 text-white placeholder:text-white/80 border-green-600"
+                  className="pl-8 bg-brand-dark text-white placeholder:text-white/80 border-brand-dark"
                 />
                 <Search className="w-4 h-4 absolute left-2 top-1/2 transform -translate-y-1/2 text-white" />
               </div>
@@ -126,9 +126,9 @@ export default function ServicesPage() {
                   {[
                     { day: "M", height: "h-16", color: "bg-purple-400" },
                     { day: "T", height: "h-12", color: "bg-purple-400" },
-                    { day: "W", height: "h-8", color: "bg-green-400" },
-                    { day: "T", height: "h-20", color: "bg-green-400" },
-                    { day: "F", height: "h-14", color: "bg-green-400" },
+                    { day: "W", height: "h-8", color: "bg-brand" },
+                    { day: "T", height: "h-20", color: "bg-brand" },
+                    { day: "F", height: "h-14", color: "bg-brand" },
                     { day: "M", height: "h-18", color: "bg-purple-400" },
                     { day: "T", height: "h-24", color: "bg-purple-400" },
                     { day: "W", height: "h-10", color: "bg-purple-400" },
@@ -143,7 +143,7 @@ export default function ServicesPage() {
               </Card>
 
               {/* Performance Alert */}
-              <div className="bg-green-600 text-white p-3 rounded-lg text-sm">
+              <div className="bg-brand-dark text-white p-3 rounded-lg text-sm">
                 <strong>Julio</strong> disminuyó su rendimiento.
               </div>
 

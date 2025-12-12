@@ -122,7 +122,7 @@ export default function PricingPage() {
 
               <Button
                 onClick={() => handleSelectPlan('starter')}
-                className="w-full bg-green-400 hover:bg-green-500 text-white rounded-full"
+                className="w-full bg-brand hover:bg-brand-hover text-brand-foreground rounded-full"
               >
                 Iniciar
               </Button>
@@ -168,7 +168,7 @@ export default function PricingPage() {
 
               <Button
                 onClick={() => handleSelectPlan('enterprise')}
-                className="w-full bg-green-400 hover:bg-green-500 text-white rounded-full"
+                className="w-full bg-brand hover:bg-brand-hover text-brand-foreground rounded-full"
               >
                 Iniciar
               </Button>
@@ -212,7 +212,7 @@ export default function PricingPage() {
 
               <Button
                 onClick={() => handleSelectPlan('growth')}
-                className="w-full bg-green-400 hover:bg-green-500 text-white rounded-full"
+                className="w-full bg-brand hover:bg-brand-hover text-brand-foreground rounded-full"
               >
                 Iniciar
               </Button>
@@ -232,7 +232,7 @@ export default function PricingPage() {
               <p className="text-gray-600 mt-2">{planDetails[selectedPlan].price}</p>
             </div>
 
-            <Card className="p-8 border-2 border-green-400 bg-white/80 backdrop-blur">
+            <Card className="p-8 border-2 border-brand bg-white/80 backdrop-blur">
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
@@ -293,7 +293,7 @@ export default function PricingPage() {
                     onClick={handleCancelClick}
                     variant="outline"
                     disabled={isLoading}
-                    className="px-8 bg-green-400 hover:bg-green-500 text-white border-green-400 hover:border-green-500"
+                    className="px-8 bg-brand hover:bg-brand-hover text-brand-foreground border-brand hover:border-brand-hover"
                   >
                     Cancelar
                   </Button>

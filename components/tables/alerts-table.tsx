@@ -27,7 +27,7 @@ export function AlertsTable({ alerts = [], isLoading = false }: AlertsTableProps
       case "medio":
         return "bg-yellow-100 text-yellow-700"
       case "bajo":
-        return "bg-green-100 text-green-700"
+        return "bg-brand-light text-brand-dark"
       default:
         return "bg-gray-100 text-gray-700"
     }
