@@ -11,6 +11,7 @@ import { useAppSelector } from "@/lib/store/hooks"
 import { analyticsService } from "@/lib/services/analyticsService"
 import { monitoringService } from "@/lib/services/monitoringService"
 import { authService } from "@/lib/services/authService"
+import { managementService } from "@/lib/services/managementService"
 import { useRouter } from "next/navigation"
 
 export default function AdminDashboard() {
@@ -21,22 +22,25 @@ export default function AdminDashboard() {
   const [recentSessions, setRecentSessions] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [employees, setEmployees] = useState<any[]>([]) // Changed to useState for employees
+  const [projects, setProjects] = useState<any[]>([]) // Added this state
 
   useEffect(() => {
     async function fetchDashboardData() {
       try {
         setIsLoading(true)
 
-        const [dashboard, stats, sessions, supervisedUsers] = await Promise.all([
+        const [dashboard, stats, sessions, supervisedUsers, userProjects] = await Promise.all([
           analyticsService.getDashboard().catch(() => null),
           monitoringService.getUserSessionStats(user?.id || '').catch(() => null),
           monitoringService.getUserSessions(user?.id || '', { limit: 3 }).catch(() => []),
           authService.getSupervisedUsers().catch(() => []),
+          managementService.getUserProjects(user?.id || '').catch(() => []), // Added this line
         ])
 
         setDashboardData(dashboard)
         setSessionStats(stats)
         setRecentSessions(sessions || [])
+        setProjects(userProjects || []) // Added this line
 
         // Mapear usuarios supervisados a formato de empleados
         // FILTRAR por empresa del usuario actual (temporal hasta que backend lo haga)

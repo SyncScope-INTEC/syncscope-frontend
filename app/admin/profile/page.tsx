@@ -121,7 +121,7 @@ export default function AdminProfilePage() {
     }
   }, [user])
 
-  const handleSaveProfile = async (data: { email: string; phone: string; timezone: string }) => {
+  const handleSaveProfile = async (data: { email: string; phone: string; timezone: string; image?: File }) => {
     try {
       // Actualizar perfil en el backend
       await authService.updateProfile({
@@ -130,8 +130,21 @@ export default function AdminProfilePage() {
         // Solo se puede actualizar first_name, last_name, timezone
       })
 
+      // Si hay imagen, subirla
+      if (data.image && user?.id) {
+        await authService.uploadUserImage(user.id, data.image)
+        toast.success('Imagen de perfil actualizada')
+      }
+
       setProfile({ ...profile, ...data })
       toast.success('Perfil actualizado exitosamente')
+
+      // Recargar perfil para obtener nueva imagen
+      const updatedProfile = await authService.getProfile()
+      setProfile({
+        ...profile,
+        profile_image_path: updatedProfile.profile_image_path,
+      })
     } catch (error: any) {
       console.error('Error updating profile:', error)
       toast.error('Error al actualizar el perfil')

@@ -11,12 +11,14 @@ import { Card } from "@/components/ui/card"
 import { FileText } from "lucide-react"
 import { monitoringService } from "@/lib/services/monitoringService"
 import { analyticsService } from "@/lib/services/analyticsService"
+import { alertsService } from "@/lib/services/alertsService"
 import { useAppSelector } from "@/lib/store/hooks"
 import { toast } from "sonner"
 
 export default function AlertsHistoryPage() {
   const { user } = useAppSelector((state) => state.auth)
   const [alerts, setAlerts] = useState<any[]>([])
+  const [filteredAlerts, setFilteredAlerts] = useState<any[]>([])
   const [performanceData, setPerformanceData] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -25,42 +27,31 @@ export default function AlertsHistoryPage() {
       try {
         setIsLoading(true)
 
-        // Obtener sesiones recientes y métricas
-        const [sessions, dashboard] = await Promise.all([
-          monitoringService.getUserSessions(user?.id || '', { limit: 10 }).catch(() => []),
+        // Obtener alertas reales y dashboard
+        const [alertsData, dashboard] = await Promise.all([
+          alertsService.getAllAlerts().catch(() => ({ results: [] })),
           analyticsService.getDashboard().catch(() => null),
         ])
 
-        // Mapear sesiones a alertas (simulado)
-        const mappedAlerts = sessions?.map((session: any, index: number) => {
-          const duration = session.session_duration_minutes || 0
-          let severity: 'alto' | 'medio' | 'bajo' = 'bajo'
-
-          if (duration < 30) {
-            severity = 'alto'
-          } else if (duration < 120) {
-            severity = 'medio'
-          }
-
-          return {
-            id: session.session_id || `${index}`,
-            title:
-              severity === 'alto'
-                ? 'Sesión muy corta detectada'
-                : severity === 'medio'
-                  ? 'Rendimiento moderado'
-                  : 'Sesión normal',
-            employee: `${user?.first_name || 'Usuario'} ${user?.last_name || ''}`,
-            date: new Date(session.session_start).toLocaleDateString('es-ES', {
-              day: '2-digit',
-              month: 'long',
-              year: 'numeric',
-            }),
-            severity,
-          }
-        }) || []
+        // Mapear alertas al formato esperado por la tabla
+        const mappedAlerts = alertsData?.results?.map((alert: any) => ({
+          id: alert.id,
+          title: alert.title,
+          employee: alert.user_name || `${user?.first_name || 'Usuario'} ${user?.last_name || ''}`,
+          date: new Date(alert.created_at).toLocaleDateString('es-ES', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric',
+          }),
+          severity: alert.severity === 'critical' ? 'alto' : alert.severity === 'high' ? 'alto' : alert.severity === 'medium' ? 'medio' : 'bajo',
+          is_muted: alert.is_muted,
+          is_acknowledged: alert.is_acknowledged,
+          is_resolved: alert.is_resolved,
+          raw_severity: alert.severity, // Guardar severidad original para filtrado
+        })) || []
 
         setAlerts(mappedAlerts)
+        setFilteredAlerts(mappedAlerts)
         setPerformanceData(dashboard)
       } catch (error: any) {
         console.error('Error fetching alerts:', error)
@@ -86,9 +77,36 @@ export default function AlertsHistoryPage() {
     }
   }, [user])
 
-  const handleFilterChange = (filters: any) => {
-    console.log("[v0] Filtros aplicados:", filters)
-    toast.info('Filtros aplicados')
+  const handleFilterChange = (filters: { severity: string; status: string; search: string }) => {
+    let filtered = [...alerts]
+
+    // Filtrar por severidad
+    if (filters.severity) {
+      filtered = filtered.filter((alert) => alert.raw_severity === filters.severity)
+    }
+
+    // Filtrar por estado
+    if (filters.status) {
+      if (filters.status === 'unresolved') {
+        filtered = filtered.filter((alert) => !alert.is_resolved)
+      } else if (filters.status === 'acknowledged') {
+        filtered = filtered.filter((alert) => alert.is_acknowledged && !alert.is_resolved)
+      } else if (filters.status === 'resolved') {
+        filtered = filtered.filter((alert) => alert.is_resolved)
+      }
+    }
+
+    // Filtrar por búsqueda
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase()
+      filtered = filtered.filter(
+        (alert) =>
+          alert.title.toLowerCase().includes(searchLower) ||
+          alert.employee.toLowerCase().includes(searchLower)
+      )
+    }
+
+    setFilteredAlerts(filtered)
   }
 
   const handleExportPDF = async () => {
@@ -131,11 +149,14 @@ export default function AlertsHistoryPage() {
           {/* Left Column - Alerts Table */}
           <div className="lg:col-span-2">
             <AlertFilters onFilterChange={handleFilterChange} />
-            <AlertsTable alerts={alerts} isLoading={isLoading} />
+            {/* Alerts Table */}
+            <Card className="p-6 border-2 border-purple-200">
+              <AlertsTable alerts={filteredAlerts} isLoading={isLoading} />
+            </Card>
           </div>
 
-          {/* Right Column - Performance Chart */}
-          <div className="space-y-6">
+          {/* Right Column - Performance Chart and other cards */}
+          <div className="lg:col-span-1 space-y-6">
             <PerformanceChartCard data={performanceData} />
 
             {/* Performance Status */}
