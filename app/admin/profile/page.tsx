@@ -53,30 +53,31 @@ export default function AdminProfilePage() {
           .catch(() => [])
 
         // Mapear sesiones a formato de actividades
-        const mappedActivities =
-          sessions?.map((session: any, index: number) => ({
-            id: session.session_id || `${index}`,
-            title: session.git_repository_url?.split('/').pop() || 'Sesión de desarrollo',
+        const mappedActivities = Array.isArray(sessions) && sessions.length > 0
+          ? sessions.map((session: any, index: number) => ({
+            id: session?.session_id || `${index}`,
+            title: session?.git_repository_url?.split('/').pop() || 'Sesión de desarrollo',
             assignee: `${profileData.first_name} ${profileData.last_name}`,
-            date: new Date(session.session_start).toLocaleDateString('es-ES', {
+            date: session?.session_start ? new Date(session.session_start).toLocaleDateString('es-ES', {
               day: '2-digit',
               month: 'long',
               year: 'numeric',
-            }),
-          })) || []
+            }) : 'Fecha desconocida',
+          }))
+          : []
 
         setProfile({
-          firstName: profileData.first_name || 'Usuario',
-          lastName: profileData.last_name || '',
-          role: profileData.role || 'Usuario',
-          email: profileData.email || '',
-          phone: profileData.phone || '',
-          identifier: profileData.id || '000000000',
-          company: profileData.company?.name || profileData.company_name || 'Sin empresa',
-          gitHubUser: profileData.github_username || 'No configurado',
-          gitLabUser: profileData.gitlab_username || 'No configurado',
-          timezone: profileData.timezone || 'UTC-4',
-          status: profileData.is_active ? 'Activo' : 'Inactivo',
+          firstName: profileData.first_name || user?.first_name || 'Usuario',
+          lastName: profileData.last_name || user?.last_name || '',
+          role: profileData.role || user?.role || 'Usuario',
+          email: profileData.email || user?.email || '',
+          phone: profileData.phone_number || profileData.phone || (user as any)?.phone_number || '',
+          identifier: profileData.id || user?.id || '000000000',
+          company: profileData.company?.name || profileData.company_name || user?.company?.name || (user as any)?.company_name || 'Sin empresa',
+          gitHubUser: profileData.github_username || (user as any)?.github_username || '',
+          gitLabUser: profileData.gitlab_username || (user as any)?.gitlab_username || '',
+          timezone: profileData.timezone || (user as any)?.timezone || '',
+          status: profileData.is_active !== undefined ? (profileData.is_active ? 'Activo' : 'Inactivo') : ((user as any)?.is_active ? 'Activo' : 'Inactivo'),
           createdDate: '',
           lastUpdated: '',
           profileImage: profileImageUrl,
@@ -93,12 +94,12 @@ export default function AdminProfilePage() {
           lastName: user?.last_name || '',
           role: user?.role || 'Usuario',
           email: user?.email || '',
-          phone: '000-0000-000',
+          phone: '',
           identifier: user?.id || '000000000',
           company: user?.company_name || 'Sin empresa',
-          gitHubUser: 'N/A',
-          gitLabUser: 'N/A',
-          timezone: 'UTC-4',
+          gitHubUser: '',
+          gitLabUser: '',
+          timezone: '',
           status: 'Activo',
           createdDate: new Date().toLocaleDateString('es-ES'),
           lastUpdated: new Date().toLocaleDateString('es-ES'),
@@ -242,15 +243,15 @@ export default function AdminProfilePage() {
                   </div>
                   <div>
                     <p className="text-gray-500">Usuario GitHub</p>
-                    <p className="text-gray-900 font-semibold">{profile.gitHubUser}</p>
+                    <p className="text-gray-900 font-semibold">{profile.gitHubUser || 'No configurado'}</p>
                   </div>
                   <div>
                     <p className="text-gray-500">Usuario GitLab</p>
-                    <p className="text-gray-900 font-semibold">{profile.gitLabUser}</p>
+                    <p className="text-gray-900 font-semibold">{profile.gitLabUser || 'No configurado'}</p>
                   </div>
                   <div>
                     <p className="text-gray-500">Zona horaria</p>
-                    <p className="text-gray-900 font-semibold">{profile.timezone}</p>
+                    <p className="text-gray-900 font-semibold">{profile.timezone || 'No configurado'}</p>
                   </div>
                   <div>
                     <p className="text-gray-500">Estado</p>

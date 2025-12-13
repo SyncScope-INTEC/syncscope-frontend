@@ -13,6 +13,7 @@ import { monitoringService } from "@/lib/services/monitoringService"
 import { authService } from "@/lib/services/authService"
 import { managementService } from "@/lib/services/managementService"
 import { useRouter } from "next/navigation"
+import { isDevMode, getCurrentYears } from "@/lib/utils/devMode"
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -98,11 +99,7 @@ export default function AdminDashboard() {
       time: new Date(session.session_start).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' }),
       timeDetail: new Date(session.session_start).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
     }))
-    : [
-      { text: "Se creó un nuevo proyecto", author: "Julia Perez", time: "19, Mayo, 2025", timeDetail: "2:00 PM" },
-      { text: "Se creó un nuevo proyecto", author: "Julia Perez", time: "19, Mayo, 2025", timeDetail: "2:00 PM" },
-      { text: "Se creó un nuevo proyecto", author: "Julia Perez", time: "19, Mayo, 2025", timeDetail: "2:00 PM" },
-    ]
+    : []
 
   return (
     <>
@@ -261,13 +258,15 @@ export default function AdminDashboard() {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-indigo-600 rounded"></div>
-                    <div>
-                      <p className="font-medium text-gray-900 text-sm">Proyecto 003</p>
-                      <p className="text-xs text-gray-600">19, Julio, 2025</p>
+                  {isDevMode() && (
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-indigo-600 rounded"></div>
+                      <div>
+                        <p className="font-medium text-gray-900 text-sm">Proyecto 003</p>
+                        <p className="text-xs text-gray-600">19, Julio, 2025</p>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -288,7 +287,7 @@ export default function AdminDashboard() {
               <CardContent className="space-y-6">
                 {/* Year Selector */}
                 <div className="flex gap-2">
-                  {["2016", "2017", "2018", "2019"].map((year) => (
+                  {getCurrentYears().map((year) => (
                     <Badge key={year} variant="secondary" className="text-xs">
                       {year}
                     </Badge>

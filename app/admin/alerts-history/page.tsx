@@ -15,6 +15,7 @@ import { analyticsService } from "@/lib/services/analyticsService"
 import { alertsService } from "@/lib/services/alertsService"
 import { useAppSelector } from "@/lib/store/hooks"
 import { toast } from "sonner"
+import { isDevMode } from "@/lib/utils/devMode"
 
 export default function AlertsHistoryPage() {
   const { user } = useAppSelector((state) => state.auth)
@@ -59,16 +60,20 @@ export default function AlertsHistoryPage() {
         console.error('Error fetching alerts:', error)
         toast.error('Error al cargar las alertas')
 
-        // Fallback mock data
-        setAlerts([
-          {
-            id: "1",
-            title: "Rendimiento bajo detectado",
-            employee: `${user?.first_name || 'Usuario'} ${user?.last_name || ''}`,
-            date: new Date().toLocaleDateString('es-ES'),
-            severity: "alto" as const,
-          },
-        ])
+        // Fallback mock data (solo en dev mode)
+        if (isDevMode()) {
+          setAlerts([
+            {
+              id: "1",
+              title: "Rendimiento bajo detectado",
+              employee: `${user?.first_name || 'Usuario'} ${user?.last_name || ''}`,
+              date: new Date().toLocaleDateString('es-ES'),
+              severity: "alto" as const,
+            },
+          ])
+        } else {
+          setAlerts([])
+        }
       } finally {
         setIsLoading(false)
       }

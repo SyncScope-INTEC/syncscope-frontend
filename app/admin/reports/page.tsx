@@ -17,6 +17,7 @@ import { toast } from "sonner"
 export default function ReportsPage() {
   const { user } = useAppSelector((state) => state.auth)
   const [profile, setProfile] = useState<any>(null)
+  const [profileData, setProfileData] = useState<any>(null)
   const [dashboardData, setDashboardData] = useState<any>(null)
   const [sessionStats, setSessionStats] = useState<any>(null)
   const [team, setTeam] = useState<any[]>([])
@@ -28,22 +29,24 @@ export default function ReportsPage() {
         setIsLoading(true)
 
         // Obtener datos en paralelo
-        const [profileData, dashboard, stats, supervisedUsers] = await Promise.all([
+        const [profileDataResponse, dashboard, stats, supervisedUsers] = await Promise.all([
           authService.getProfile().catch(() => null),
           analyticsService.getDashboard().catch(() => null),
           monitoringService.getUserSessionStats(user?.id || '').catch(() => null),
           authService.getSupervisedUsers().catch(() => []),
         ])
 
+        setProfileData(profileDataResponse)
+
         setProfile({
-          firstName: profileData?.first_name || user?.first_name || 'Usuario',
-          lastName: profileData?.last_name || user?.last_name || '',
-          role: profileData?.role || user?.role || 'Usuario',
-          email: profileData?.email || user?.email || '',
-          phone: profileData?.phone_number || profileData?.phone || (user as any)?.phone_number || 'No disponible',
+          firstName: profileDataResponse?.first_name || user?.first_name || 'Usuario',
+          lastName: profileDataResponse?.last_name || user?.last_name || '',
+          role: profileDataResponse?.role || user?.role || 'Usuario',
+          email: profileDataResponse?.email || user?.email || '',
+          phone: profileDataResponse?.phone_number || profileDataResponse?.phone || '',
           identifier: user?.id || '000000000',
-          company: profileData?.company?.name || user?.company?.name || user?.company_name || 'Sin empresa',
-          profileImage: profileData?.profile_image_path || profileData?.profile_image || '/professional-woman-smiling.png',
+          company: profileDataResponse?.company?.name || user?.company?.name || user?.company_name || 'Sin empresa',
+          profileImage: profileDataResponse?.profile_image_path || profileDataResponse?.profile_image || '/professional-woman-smiling.png',
         })
 
         setDashboardData(dashboard)
@@ -53,7 +56,7 @@ export default function ReportsPage() {
         // FILTRAR por empresa del usuario actual (temporal hasta que backend lo haga)
         const filteredSupervision = supervisedUsers?.filter(
           (supervision: any) =>
-            supervision.supervisee?.company?.id === profileData?.company?.id ||
+            supervision.supervisee?.company?.id === profileDataResponse?.company?.id ||
             supervision.supervisee?.company?.id === user?.company?.id
         ) || []
 
@@ -80,11 +83,11 @@ export default function ReportsPage() {
         })
 
         // Agregar el usuario actual al equipo
-        const currentUserRole = profileData?.role || user?.role || 'developer'
+        const currentUserRole = profileDataResponse?.role || user?.role || 'developer'
         setTeam([
           {
             id: user?.id || '0',
-            name: profileData?.first_name || 'Usuario',
+            name: profileDataResponse?.first_name || 'Usuario',
             role: currentUserRole.charAt(0).toUpperCase() + currentUserRole.slice(1),
             lastActivity: 'Activo', // Usuario actual siempre activo
           },
@@ -100,7 +103,7 @@ export default function ReportsPage() {
           lastName: user?.last_name || '',
           role: user?.role || 'Usuario',
           email: user?.email || '',
-          phone: '000-0000-000',
+          phone: '',
           identifier: user?.id || '000000000',
           company: user?.company_name || 'Sin empresa',
           profileImage: '/professional-woman-smiling.png',
@@ -201,13 +204,13 @@ export default function ReportsPage() {
                 <span className="text-gray-500">Apellido: {profile?.lastName}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Usuario GitHub: N/A</span>
+                <span className="text-gray-500">Usuario GitHub: {profile?.firstName ? (profileData?.github_username || 'No configurado') : 'No configurado'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Usuario GitLab: N/A</span>
+                <span className="text-gray-500">Usuario GitLab: {profile?.firstName ? (profileData?.gitlab_username || 'No configurado') : 'No configurado'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Zona horaria: UTC-4</span>
+                <span className="text-gray-500">Zona horaria: {profile?.firstName ? (profileData?.timezone || 'No configurado') : 'No configurado'}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">Estado: Activo</span>
