@@ -7,6 +7,7 @@ import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { EditProfileModal } from "@/components/modals/edit-profile-modal"
+import { ProfileSkeleton } from "@/components/skeletons/profile-skeleton"
 import { useAppSelector } from "@/lib/store/hooks"
 import { authService } from "@/lib/services/authService"
 import { monitoringService } from "@/lib/services/monitoringService"
@@ -155,9 +156,7 @@ export default function AdminProfilePage() {
       <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-50 to-white">
         <AppHeader />
         <main className="flex-1 max-w-7xl mx-auto px-6 py-8 w-full">
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
-          </div>
+          <ProfileSkeleton />
         </main>
         <Footer />
       </div>

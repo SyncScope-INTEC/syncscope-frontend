@@ -2,6 +2,7 @@
 
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { ProfileCardSkeleton } from "@/components/skeletons/profile-card-skeleton"
 import Image from "next/image"
 
 interface ProfileCardProps {
@@ -21,6 +22,7 @@ interface ProfileCardProps {
   profileImage?: string
   onEdit?: () => void
   showEditButton?: boolean
+  isLoading?: boolean
 }
 
 export function ProfileCard({
@@ -38,7 +40,12 @@ export function ProfileCard({
   profileImage,
   onEdit,
   showEditButton = false,
+  isLoading = false,
 }: ProfileCardProps) {
+  if (isLoading) {
+    return <ProfileCardSkeleton />
+  }
+
   return (
     <Card className="p-6 border border-purple-200">
       <div className="flex gap-6">
