@@ -204,8 +204,7 @@ export default function RegisterPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="developer">Desarrollador</SelectItem>
-                        <SelectItem value="project_manager">Project Manager</SelectItem>
-                        <SelectItem value="team_lead">Team Lead</SelectItem>
+                        <SelectItem value="supervisor">Supervisor</SelectItem>
                         <SelectItem value="admin">Administrador</SelectItem>
                       </SelectContent>
                     </Select>

@@ -115,9 +115,13 @@ export default function AdminDashboard() {
               {user?.company_name || user?.company?.name || 'Mi Empresa'}
             </h1>
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold">🦊</span>
-              </div>
+              <Image
+                src="/Gitlab.png"
+                alt="GitLab"
+                width={32}
+                height={32}
+                className="cursor-pointer"
+              />
               <Github className="w-8 h-8 text-gray-900 cursor-pointer" />
             </div>
           </div>
