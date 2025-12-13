@@ -27,8 +27,14 @@ export default function AdminProfilePage() {
         // Obtener perfil del usuario desde el backend
         const profileData = await authService.getProfile()
 
-        // Intentar obtener la imagen de perfil
-        let profileImageUrl = '/professional-person.png'
+        // Construir URL completa de imagen de perfil
+        let profileImageUrl = ''
+        if (profileData.profile_image_path) {
+          // Construir URL completa con el base URL del API
+          const AUTH_API_URL = process.env.NEXT_PUBLIC_AUTH_URL || 'http://localhost:8000'
+          profileImageUrl = `${AUTH_API_URL}/media/${profileData.profile_image_path}`
+        }
+
         if (user?.id) {
           try {
             const imageData = await authService.getUserImage(user.id)
@@ -63,27 +69,15 @@ export default function AdminProfilePage() {
           lastName: profileData.last_name || '',
           role: profileData.role || 'Usuario',
           email: profileData.email || '',
-          phone: profileData.phone || '000-0000-000',
+          phone: profileData.phone || '',
           identifier: profileData.id || '000000000',
-          company: profileData.company_name || 'Sin empresa',
-          gitHubUser: profileData.github_username || 'N/A',
-          gitLabUser: profileData.gitlab_username || 'N/A',
+          company: profileData.company?.name || profileData.company_name || 'Sin empresa',
+          gitHubUser: profileData.github_username || 'No configurado',
+          gitLabUser: profileData.gitlab_username || 'No configurado',
           timezone: profileData.timezone || 'UTC-4',
           status: profileData.is_active ? 'Activo' : 'Inactivo',
-          createdDate: profileData.created_at
-            ? new Date(profileData.created_at).toLocaleDateString('es-ES', {
-              day: '2-digit',
-              month: '2-digit',
-              year: 'numeric',
-            })
-            : new Date().toLocaleDateString('es-ES'),
-          lastUpdated: profileData.updated_at
-            ? new Date(profileData.updated_at).toLocaleDateString('es-ES', {
-              day: '2-digit',
-              month: '2-digit',
-              year: 'numeric',
-            })
-            : new Date().toLocaleDateString('es-ES'),
+          createdDate: '',
+          lastUpdated: '',
           profileImage: profileImageUrl,
         })
 
@@ -107,7 +101,7 @@ export default function AdminProfilePage() {
           status: 'Activo',
           createdDate: new Date().toLocaleDateString('es-ES'),
           lastUpdated: new Date().toLocaleDateString('es-ES'),
-          profileImage: '/professional-person.png',
+          profileImage: '',
         })
 
         setActivities([])
@@ -139,12 +133,13 @@ export default function AdminProfilePage() {
       setProfile({ ...profile, ...data })
       toast.success('Perfil actualizado exitosamente')
 
-      // Recargar perfil para obtener nueva imagen
+      // Recargar perfil para obtener nueva imagen con cache busting
       const updatedProfile = await authService.getProfile()
-      setProfile({
-        ...profile,
-        profile_image_path: updatedProfile.profile_image_path,
-      })
+      setProfile((prev: any) => ({
+        ...prev,
+        profileImage: updatedProfile.profile_image_path ? `${updatedProfile.profile_image_path}?t=${Date.now()}` : '',
+        timezone: updatedProfile.timezone,
+      }))
     } catch (error: any) {
       console.error('Error updating profile:', error)
       toast.error('Error al actualizar el perfil')
@@ -195,24 +190,33 @@ export default function AdminProfilePage() {
             <div className="flex flex-col md:flex-row gap-6">
               {/* Profile Image - Larger */}
               <div className="flex-shrink-0">
-                <div className="relative w-48 h-56 rounded-lg overflow-hidden border-2 border-purple-200">
-                  <Image
-                    src={profile.profileImage}
-                    alt={`${profile.firstName} ${profile.lastName}`}
-                    fill
-                    className="object-cover"
-                  />
+                <div className="relative w-48 h-56 rounded-lg overflow-hidden border-2 border-purple-200 bg-gray-200">
+                  {profile.profileImage ? (
+                    <Image
+                      src={profile.profileImage}
+                      alt={`${profile.firstName} ${profile.lastName}`}
+                      fill
+                      className="object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement
+                        target.style.display = 'none'
+                      }}
+                    />
+                  ) : null}
+                  {!profile.profileImage && (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <svg className="w-24 h-24 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                      </svg>
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* Profile Info */}
               <div className="flex-1 space-y-6">
-                {/* Top Section - Identifier, Company, Email, Phone */}
+                {/* Top Section - Company, Email, Phone */}
                 <div className="space-y-2 text-sm">
-                  <div>
-                    <p className="text-gray-500">Número identificador</p>
-                    <p className="text-gray-900 font-semibold">{profile.identifier}</p>
-                  </div>
                   <div>
                     <p className="text-gray-500">Compañía</p>
                     <p className="text-gray-900 font-semibold">{profile.company}</p>
@@ -223,7 +227,7 @@ export default function AdminProfilePage() {
                   </div>
                   <div>
                     <p className="text-gray-500">Número telefónico</p>
-                    <p className="text-gray-900 font-semibold">{profile.phone}</p>
+                    <p className="text-gray-900 font-semibold">{profile.phone || 'No configurado'}</p>
                   </div>
                 </div>
 
@@ -242,7 +246,7 @@ export default function AdminProfilePage() {
                     <p className="text-gray-900 font-semibold">{profile.gitHubUser}</p>
                   </div>
                   <div>
-                    <p className="text-gray-500">Usuario Gitmlab</p>
+                    <p className="text-gray-500">Usuario GitLab</p>
                     <p className="text-gray-900 font-semibold">{profile.gitLabUser}</p>
                   </div>
                   <div>
@@ -252,14 +256,6 @@ export default function AdminProfilePage() {
                   <div>
                     <p className="text-gray-500">Estado</p>
                     <p className="text-gray-900 font-semibold">{profile.status}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500">Fecha de creación</p>
-                    <p className="text-gray-900 font-semibold">{profile.createdDate}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500">Última actualización</p>
-                    <p className="text-gray-900 font-semibold">{profile.lastUpdated}</p>
                   </div>
                 </div>
 

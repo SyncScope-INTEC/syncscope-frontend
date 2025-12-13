@@ -60,11 +60,12 @@ export default function ReportsPage() {
         const teamData = filteredSupervision.map((supervision: any) => {
           const lastLogin = supervision.supervisee?.last_login
           const isToday = lastLogin && new Date(lastLogin).toDateString() === new Date().toDateString()
+          const role = supervision.supervisee?.role || 'developer'
 
           return {
             id: supervision.supervisee?.id || supervision.id,
             name: `${supervision.supervisee?.first_name || 'Usuario'} ${supervision.supervisee?.last_name || ''}`,
-            role: supervision.supervisee?.role || 'Developer',
+            role: role.charAt(0).toUpperCase() + role.slice(1),
             lastActivity: isToday
               ? 'Activo'
               : lastLogin
@@ -79,11 +80,12 @@ export default function ReportsPage() {
         })
 
         // Agregar el usuario actual al equipo
+        const currentUserRole = profileData?.role || user?.role || 'developer'
         setTeam([
           {
             id: user?.id || '0',
             name: profileData?.first_name || 'Usuario',
-            role: profileData?.role || 'Developer',
+            role: currentUserRole.charAt(0).toUpperCase() + currentUserRole.slice(1),
             lastActivity: 'Activo', // Usuario actual siempre activo
           },
           ...teamData,

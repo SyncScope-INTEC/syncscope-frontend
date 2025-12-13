@@ -84,10 +84,10 @@ export default function AdminLogin() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-white">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-purple-50 to-white">
       <Header />
 
-      <main className="container mx-auto px-6 py-16">
+      <main className="flex-1 container mx-auto px-6 py-16">
         <div className="max-w-4xl mx-auto">
           {/* Decorative Elements */}
           <div className="relative">
