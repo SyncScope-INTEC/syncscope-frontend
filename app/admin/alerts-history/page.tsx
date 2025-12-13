@@ -7,7 +7,8 @@ import { AlertFilters } from "@/components/filters/alert-filters"
 import { AlertsTable } from "@/components/tables/alerts-table"
 import { PerformanceChartCard } from "@/components/cards/performance-chart-card"
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { FileText } from "lucide-react"
 import { monitoringService } from "@/lib/services/monitoringService"
 import { analyticsService } from "@/lib/services/analyticsService"
@@ -19,6 +20,7 @@ export default function AlertsHistoryPage() {
   const { user } = useAppSelector((state) => state.auth)
   const [alerts, setAlerts] = useState<any[]>([])
   const [filteredAlerts, setFilteredAlerts] = useState<any[]>([])
+  const [reportType, setReportType] = useState('anomaly_detection')
   const [performanceData, setPerformanceData] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -116,9 +118,16 @@ export default function AlertsHistoryPage() {
       // Crear reporte
       const report = await analyticsService.createReport({
         name: `Alertas - ${new Date().toLocaleDateString('es-ES')}`,
-        type: 'alerts',
-        config: { alerts: alerts.length },
+        type: reportType,
+        config: { alerts: filteredAlerts.length },
       })
+
+      console.log('Report created:', report)
+
+      if (!report || !report.id) {
+        toast.error('Error: No se pudo crear el reporte')
+        return
+      }
 
       // Exportar a PDF
       const exported = await analyticsService.exportReport(report.id, 'pdf', true, true)
@@ -131,7 +140,7 @@ export default function AlertsHistoryPage() {
       }
     } catch (error: any) {
       console.error('Error exporting PDF:', error)
-      toast.error('Error al exportar PDF')
+      toast.error(`Error al generar reporte: ${error.message || 'Error desconocido'}`)
     }
   }
 
@@ -158,6 +167,34 @@ export default function AlertsHistoryPage() {
           {/* Right Column - Performance Chart and other cards */}
           <div className="lg:col-span-1 space-y-6">
             <PerformanceChartCard data={performanceData} />
+
+            {/* Report Type Selector */}
+            <Card className="p-6 border-2 border-purple-200">
+              <CardHeader className="p-0 mb-4">
+                <CardTitle className="text-lg">Tipo de Reporte</CardTitle>
+              </CardHeader>
+              <CardContent className="p-0 space-y-4">
+                <Select value={reportType} onValueChange={setReportType}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Selecciona tipo de reporte" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="productivity">Productivity Report</SelectItem>
+                    <SelectItem value="code_quality">Code Quality Report</SelectItem>
+                    <SelectItem value="time_tracking">Time Tracking Report</SelectItem>
+                    <SelectItem value="team_performance">Team Performance Report</SelectItem>
+                    <SelectItem value="individual_performance">Individual Performance Report</SelectItem>
+                    <SelectItem value="project_summary">Project Summary Report</SelectItem>
+                    <SelectItem value="git_activity">Git Activity Report</SelectItem>
+                    <SelectItem value="deployment_metrics">Deployment Metrics Report</SelectItem>
+                    <SelectItem value="custom">Custom Report</SelectItem>
+                    <SelectItem value="comparative">Comparative Analysis</SelectItem>
+                    <SelectItem value="trend_analysis">Trend Analysis</SelectItem>
+                    <SelectItem value="anomaly_detection">Anomaly Detection Report</SelectItem>
+                  </SelectContent>
+                </Select>
+              </CardContent>
+            </Card>
 
             {/* Performance Status */}
             <Card className="p-6 bg-brand text-brand-foreground">

@@ -67,6 +67,7 @@ export function DashboardFilters({ onFilterChange, className }: DashboardFilters
   }
 
   const getSelectedProjectNames = () => {
+    if (!Array.isArray(projects)) return []
     return projects
       .filter((p) => filters.selectedProjects.includes(p.id))
       .map((p) => p.name)
