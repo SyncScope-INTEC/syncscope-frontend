@@ -3,9 +3,6 @@ import axios from 'axios'
 const AUTH_API_URL = process.env.NEXT_PUBLIC_AUTH_URL
 const API_URL = `${AUTH_API_URL}/auth`
 
-console.log('🔍 AUTH_API_URL:', AUTH_API_URL)
-console.log('🔍 API_URL:', API_URL)
-
 const api = axios.create({
   baseURL: API_URL,
   headers: {

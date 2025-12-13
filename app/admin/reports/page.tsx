@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { AppHeader } from "@/components/navigation/app-header"
 import { Footer } from "@/components/footer"
+import { DashboardFilters } from "@/components/filters/dashboard-filters"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import { TeamMembersTable } from "@/components/tables/team-members-table"
@@ -39,10 +40,10 @@ export default function ReportsPage() {
           lastName: profileData?.last_name || user?.last_name || '',
           role: profileData?.role || user?.role || 'Usuario',
           email: profileData?.email || user?.email || '',
-          phone: profileData?.phone || '000-0000-000',
+          phone: profileData?.phone_number || profileData?.phone || (user as any)?.phone_number || 'No disponible',
           identifier: user?.id || '000000000',
-          company: profileData?.company_name || user?.company_name || 'Sin empresa',
-          profileImage: profileData?.profile_image || '/professional-woman-smiling.png',
+          company: profileData?.company?.name || user?.company?.name || user?.company_name || 'Sin empresa',
+          profileImage: profileData?.profile_image_path || profileData?.profile_image || '/professional-woman-smiling.png',
         })
 
         setDashboardData(dashboard)
@@ -56,19 +57,26 @@ export default function ReportsPage() {
             supervision.supervisee?.company?.id === user?.company?.id
         ) || []
 
-        const teamData = filteredSupervision.map((supervision: any) => ({
-          id: supervision.supervisee?.id || supervision.id,
-          name: `${supervision.supervisee?.first_name || 'Usuario'} ${supervision.supervisee?.last_name || ''}`,
-          role: supervision.supervisee?.role || 'Developer',
-          lastActivity: supervision.supervisee?.last_login
-            ? new Date(supervision.supervisee.last_login).toLocaleString('es-ES', {
-              day: '2-digit',
-              month: 'short',
-              hour: '2-digit',
-              minute: '2-digit',
-            })
-            : 'Sin actividad',
-        }))
+        const teamData = filteredSupervision.map((supervision: any) => {
+          const lastLogin = supervision.supervisee?.last_login
+          const isToday = lastLogin && new Date(lastLogin).toDateString() === new Date().toDateString()
+
+          return {
+            id: supervision.supervisee?.id || supervision.id,
+            name: `${supervision.supervisee?.first_name || 'Usuario'} ${supervision.supervisee?.last_name || ''}`,
+            role: supervision.supervisee?.role || 'Developer',
+            lastActivity: isToday
+              ? 'Activo'
+              : lastLogin
+                ? new Date(lastLogin).toLocaleString('es-ES', {
+                  day: '2-digit',
+                  month: 'short',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })
+                : 'Sin actividad',
+          }
+        })
 
         // Agregar el usuario actual al equipo
         setTeam([
@@ -76,7 +84,7 @@ export default function ReportsPage() {
             id: user?.id || '0',
             name: profileData?.first_name || 'Usuario',
             role: profileData?.role || 'Developer',
-            lastActivity: 'Hoy, 12:00PM',
+            lastActivity: 'Activo', // Usuario actual siempre activo
           },
           ...teamData,
         ])
@@ -108,9 +116,9 @@ export default function ReportsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white">
+      <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-50 to-white">
         <AppHeader />
-        <main className="max-w-7xl mx-auto px-6 py-8">
+        <main className="flex-1 max-w-7xl mx-auto px-6 py-8">
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
           </div>
@@ -121,23 +129,25 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-50 to-white">
       <AppHeader />
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="flex-1 max-w-7xl mx-auto px-6 py-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
-            Bienvenida, {profile?.firstName || 'Usuario'}
+            Bienvenid@, {profile?.firstName || 'Usuario'}
           </h1>
-          <p className="text-gray-600 mt-1">{profile?.role || 'Usuario'}</p>
+          <p className="text-gray-600 mt-1">
+            {profile?.role ? profile.role.charAt(0).toUpperCase() + profile.role.slice(1) : 'Usuario'}
+          </p>
         </div>
 
         {/* Filters */}
-        <div className="flex gap-2 mb-8">
-          <Badge className="bg-brand text-brand-foreground cursor-pointer hover:bg-brand-hover">Fecha</Badge>
-          <Badge className="bg-brand text-brand-foreground cursor-pointer hover:bg-brand-hover">Proyecto</Badge>
-        </div>
+        <DashboardFilters className="mb-8" onFilterChange={(filters) => {
+          console.log('Filtros aplicados:', filters)
+          // TODO: Filtrar datos según filtros seleccionados
+        }} />
 
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">

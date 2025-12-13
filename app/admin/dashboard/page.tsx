@@ -107,12 +107,12 @@ export default function AdminDashboard() {
   return (
     <>
       <AppHeader />
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-white">
-        <main className="container mx-auto px-6 py-8">
+      <div className="min-h-screen flex flex-col bg-gradient-to-br from-purple-50 to-white">
+        <main className="flex-1 container mx-auto px-6 py-8">
           {/* Header Section */}
           <div className="flex items-center justify-between mb-8">
             <h1 className="text-4xl font-bold text-gray-900">
-              {user?.company_name || 'Empresa'} team
+              {user?.company_name || user?.company?.name || 'Mi Empresa'}
             </h1>
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">

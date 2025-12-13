@@ -28,6 +28,8 @@ export default function RegisterPage() {
     password_confirm: "",
     role: "developer",
     timezone: "UTC-4",
+    industry: "",
+    size: "5",
   })
 
   useEffect(() => {
@@ -61,6 +63,20 @@ export default function RegisterPage() {
     setFormData({
       ...formData,
       timezone: value,
+    })
+  }
+
+  const handleIndustryChange = (value: string) => {
+    setFormData({
+      ...formData,
+      industry: value,
+    })
+  }
+
+  const handleSizeChange = (value: string) => {
+    setFormData({
+      ...formData,
+      size: value,
     })
   }
 
@@ -188,7 +204,8 @@ export default function RegisterPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="developer">Desarrollador</SelectItem>
-                        <SelectItem value="manager">Manager</SelectItem>
+                        <SelectItem value="project_manager">Project Manager</SelectItem>
+                        <SelectItem value="team_lead">Team Lead</SelectItem>
                         <SelectItem value="admin">Administrador</SelectItem>
                       </SelectContent>
                     </Select>
@@ -203,6 +220,45 @@ export default function RegisterPage() {
                       onChange={handleTimezoneChange}
                       disabled={loading}
                     />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="industry" className="text-left block text-gray-900 font-medium">
+                      Industria
+                    </Label>
+                    <Select value={formData.industry} onValueChange={handleIndustryChange} disabled={loading}>
+                      <SelectTrigger className="w-full px-4 py-3 border-2 border-purple-200 rounded-lg focus:border-purple-400 focus:ring-0">
+                        <SelectValue placeholder="Selecciona la industria" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="technology">Tecnología</SelectItem>
+                        <SelectItem value="finance">Finanzas</SelectItem>
+                        <SelectItem value="healthcare">Salud</SelectItem>
+                        <SelectItem value="education">Educación</SelectItem>
+                        <SelectItem value="retail">Retail</SelectItem>
+                        <SelectItem value="manufacturing">Manufactura</SelectItem>
+                        <SelectItem value="consulting">Consultoría</SelectItem>
+                        <SelectItem value="other">Otra</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="size" className="text-left block text-gray-900 font-medium">
+                      Tamaño de la empresa
+                    </Label>
+                    <Select value={formData.size} onValueChange={handleSizeChange} disabled={loading}>
+                      <SelectTrigger className="w-full px-4 py-3 border-2 border-purple-200 rounded-lg focus:border-purple-400 focus:ring-0">
+                        <SelectValue placeholder="Selecciona el tamaño" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="5">Hasta 5 usuarios</SelectItem>
+                        <SelectItem value="15">Hasta 15 usuarios</SelectItem>
+                        <SelectItem value="25">Hasta 25 usuarios</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 

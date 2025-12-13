@@ -87,19 +87,31 @@ export function AppHeader() {
 
   const handleClearAllAlerts = async () => {
     try {
-      for (const alert of alerts) {
+      // Acknowledge todas las alertas, continuando aunque algunas fallen
+      const promises = alerts.map(async (alert) => {
         if (!alert.is_acknowledged) {
-          await alertsService.acknowledgeAlert(alert.id, user?.id || '', 'Cleared from notifications')
+          try {
+            await alertsService.acknowledgeAlert(alert.id, user?.id || '', 'Cleared from notifications')
+          } catch (err) {
+            console.error(`Error acknowledging alert ${alert.id}:`, err)
+            // Continuar con las demás
+          }
         }
-      }
+      })
+
+      await Promise.allSettled(promises)
 
       setAlerts([])
       setUnreadCount(0)
-      toast.success('Todas las notificaciones han sido limpiadas')
+      toast.success('Notificaciones limpiadas')
       setIsNotificationsOpen(false)
     } catch (error) {
       console.error('Error clearing alerts:', error)
-      toast.error('Error al limpiar notificaciones')
+      // Limpiar de todas formas en el frontend
+      setAlerts([])
+      setUnreadCount(0)
+      setIsNotificationsOpen(false)
+      toast.info('Notificaciones limpiadas localmente')
     }
   }
 
@@ -134,7 +146,9 @@ export function AppHeader() {
 
         {/* Navigation */}
         <div className="flex items-center gap-8">
-          <span className="text-gray-900 font-medium">Empleados</span>
+          <Link href="/admin/reports" className="text-gray-900 font-medium hover:text-purple-600 transition-colors">
+            Empleados
+          </Link>
           <div className="flex items-center gap-4">
             {/* Notifications */}
             <div className="relative" ref={notificationsRef}>
