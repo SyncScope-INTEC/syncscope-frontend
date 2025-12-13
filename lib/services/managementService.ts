@@ -42,7 +42,7 @@ export const managementService = {
   },
 
   getProject: async (id: string) => {
-    const response = await api.get(`/projects/${id}/`)
+    const response = await api.get(`/management/projects/${id}/`)
     return response.data
   },
 
@@ -58,17 +58,17 @@ export const managementService = {
   },
 
   updateProject: async (id: string, data: any) => {
-    const response = await api.put(`/projects/${id}/`, data)
+    const response = await api.put(`/management/projects/${id}/`, data)
     return response.data
   },
 
   partialUpdateProject: async (id: string, data: any) => {
-    const response = await api.patch(`/projects/${id}/`, data)
+    const response = await api.patch(`/management/projects/${id}/`, data)
     return response.data
   },
 
   deleteProject: async (id: string) => {
-    const response = await api.delete(`/projects/${id}/`)
+    const response = await api.delete(`/management/projects/${id}/`)
     return response.data
   },
 
@@ -79,7 +79,7 @@ export const managementService = {
   },
 
   getProjectMember: async (id: string) => {
-    const response = await api.get(`/project-members/${id}/`)
+    const response = await api.get(`/management/project-members/${id}/`)
     return response.data
   },
 
@@ -93,12 +93,12 @@ export const managementService = {
   },
 
   updateProjectMember: async (id: string, data: any) => {
-    const response = await api.put(`/project-members/${id}/`, data)
+    const response = await api.put(`/management/project-members/${id}/`, data)
     return response.data
   },
 
   removeProjectMember: async (id: string) => {
-    const response = await api.delete(`/project-members/${id}/`)
+    const response = await api.delete(`/management/project-members/${id}/`)
     return response.data
   },
 
@@ -109,7 +109,7 @@ export const managementService = {
   },
 
   getTeam: async (id: string) => {
-    const response = await api.get(`/teams/${id}/`)
+    const response = await api.get(`/management/teams/${id}/`)
     return response.data
   },
 
@@ -119,35 +119,35 @@ export const managementService = {
   },
 
   updateTeam: async (id: string, data: any) => {
-    const response = await api.put(`/teams/${id}/`, data)
+    const response = await api.put(`/management/teams/${id}/`, data)
     return response.data
   },
 
   deleteTeam: async (id: string) => {
-    const response = await api.delete(`/teams/${id}/`)
+    const response = await api.delete(`/management/teams/${id}/`)
     return response.data
   },
 
   // Team Members
   getTeamMembers: async (teamId: string) => {
-    const response = await api.get(`/teams/${teamId}/members/`)
+    const response = await api.get(`/management/teams/${teamId}/members/`)
     return response.data
   },
 
   addTeamMember: async (teamId: string, data: any) => {
-    const response = await api.post(`/teams/${teamId}/members/`, data)
+    const response = await api.post(`/management/teams/${teamId}/members/`, data)
     return response.data
   },
 
   // Team Projects
   getTeamProjects: async (teamId: string) => {
-    const response = await api.get(`/teams/${teamId}/projects/`)
+    const response = await api.get(`/management/teams/${teamId}/projects/`)
     return response.data
   },
 
   // User Projects
   getUserProjects: async (userId: string) => {
-    const response = await api.get(`/users/${userId}/projects/`)
+    const response = await api.get(`/management/users/${userId}/projects/`)
     return response.data
   },
 
@@ -158,7 +158,7 @@ export const managementService = {
   },
 
   getTeamMemberDetails: async (id: string) => {
-    const response = await api.get(`/team-members/${id}/`)
+    const response = await api.get(`/management/team-members/${id}/`)
     return response.data
   },
 
@@ -172,12 +172,12 @@ export const managementService = {
   },
 
   updateTeamMember: async (id: string, data: any) => {
-    const response = await api.put(`/team-members/${id}/`, data)
+    const response = await api.put(`/management/team-members/${id}/`, data)
     return response.data
   },
 
   removeTeamMember: async (id: string) => {
-    const response = await api.delete(`/team-members/${id}/`)
+    const response = await api.delete(`/management/team-members/${id}/`)
     return response.data
   },
 
@@ -191,7 +191,7 @@ export const managementService = {
     deletion_protection_enabled?: boolean
     new_deletion_password?: string
   }) => {
-    const response = await api.put(`/organization/settings/${id}/`, data)
+    const response = await api.put(`/management/organization/settings/${id}/`, data)
     return response.data
   },
 
@@ -201,7 +201,7 @@ export const managementService = {
   },
 
   resetFailedAttempts: async (id: string) => {
-    const response = await api.post(`/organization/settings/${id}/reset_failed_attempts/`)
+    const response = await api.post(`/management/organization/settings/${id}/reset_failed_attempts/`)
     return response.data
   },
 
@@ -212,7 +212,7 @@ export const managementService = {
   },
 
   getIntegration: async (id: string) => {
-    const response = await api.get(`/integrations/${id}/`)
+    const response = await api.get(`/management/integrations/${id}/`)
     return response.data
   },
 
@@ -227,12 +227,12 @@ export const managementService = {
   },
 
   updateIntegration: async (id: string, data: any) => {
-    const response = await api.put(`/integrations/${id}/`, data)
+    const response = await api.put(`/management/integrations/${id}/`, data)
     return response.data
   },
 
   deleteIntegration: async (id: string) => {
-    const response = await api.delete(`/integrations/${id}/`)
+    const response = await api.delete(`/management/integrations/${id}/`)
     return response.data
   },
 
@@ -243,7 +243,7 @@ export const managementService = {
   },
 
   getGitHubIntegration: async (id: string) => {
-    const response = await api.get(`/github-integrations/${id}/`)
+    const response = await api.get(`/management/github-integrations/${id}/`)
     return response.data
   },
 
@@ -258,17 +258,17 @@ export const managementService = {
   },
 
   updateGitHubIntegration: async (id: string, data: any) => {
-    const response = await api.put(`/github-integrations/${id}/`, data)
+    const response = await api.put(`/management/github-integrations/${id}/`, data)
     return response.data
   },
 
   deleteGitHubIntegration: async (id: string) => {
-    const response = await api.delete(`/github-integrations/${id}/`)
+    const response = await api.delete(`/management/github-integrations/${id}/`)
     return response.data
   },
 
   syncGitHubCommits: async (id: string) => {
-    const response = await api.post(`/github-integrations/${id}/sync_commits/`)
+    const response = await api.post(`/management/github-integrations/${id}/sync_commits/`)
     return response.data
   },
 
@@ -279,7 +279,7 @@ export const managementService = {
   },
 
   getCommit: async (id: string) => {
-    const response = await api.get(`/commits/${id}/`)
+    const response = await api.get(`/management/commits/${id}/`)
     return response.data
   },
 }

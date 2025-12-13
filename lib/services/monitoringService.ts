@@ -45,12 +45,12 @@ export const monitoringService = {
     userId: string,
     params?: { active_only?: boolean; limit?: number; offset?: number }
   ) => {
-    const response = await api.get(`/sessions/${userId}/`, { params })
+    const response = await api.get(`/monitoring/sessions/${userId}/`, { params })
     return response.data
   },
 
   getUserSessionStats: async (userId: string) => {
-    const response = await api.get(`/sessions/${userId}/stats/`)
+    const response = await api.get(`/monitoring/sessions/${userId}/stats/`)
     return response.data
   },
 

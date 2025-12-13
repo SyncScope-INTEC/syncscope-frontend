@@ -43,12 +43,12 @@ export const analyticsService = {
 
   // Metrics
   getMetrics: async (page = 1) => {
-    const response = await api.get('/metrics/', { params: { page } })
+    const response = await api.get('/analytics/metrics/', { params: { page } })
     return response.data
   },
 
   getMetric: async (id: string) => {
-    const response = await api.get(`/metrics/${id}/`)
+    const response = await api.get(`/analytics/metrics/${id}/`)
     return response.data
   },
 
@@ -59,7 +59,7 @@ export const analyticsService = {
     parameters: any
     is_active: boolean
   }) => {
-    const response = await api.post('/metrics/', data)
+    const response = await api.post('/analytics/metrics/', data)
     return response.data
   },
 
@@ -73,48 +73,48 @@ export const analyticsService = {
       is_active: boolean
     }
   ) => {
-    const response = await api.put(`/metrics/${id}/`, data)
+    const response = await api.put(`/analytics/metrics/${id}/`, data)
     return response.data
   },
 
   deleteMetric: async (id: string) => {
-    const response = await api.delete(`/metrics/${id}/`)
+    const response = await api.delete(`/analytics/metrics/${id}/`)
     return response.data
   },
 
   // Reports
   getReports: async (page = 1) => {
-    const response = await api.get('/reports/', { params: { page } })
+    const response = await api.get('/analytics/reports/', { params: { page } })
     return response.data
   },
 
   getReport: async (id: string) => {
-    const response = await api.get(`/reports/${id}/`)
+    const response = await api.get(`/analytics/reports/${id}/`)
     return response.data
   },
 
   createReport: async (data: { name: string; type: string; config: any }) => {
-    const response = await api.post('/reports/', data)
+    const response = await api.post('/analytics/reports/', data)
     return response.data
   },
 
   updateReport: async (id: string, data: { name: string; type: string; config: any }) => {
-    const response = await api.put(`/reports/${id}/`, data)
+    const response = await api.put(`/analytics/reports/${id}/`, data)
     return response.data
   },
 
   deleteReport: async (id: string) => {
-    const response = await api.delete(`/reports/${id}/`)
+    const response = await api.delete(`/analytics/reports/${id}/`)
     return response.data
   },
 
   regenerateReport: async (id: string, data: { name: string; type: string; config: any }) => {
-    const response = await api.post(`/reports/${id}/regenerate/`, data)
+    const response = await api.post(`/analytics/reports/${id}/regenerate/`, data)
     return response.data
   },
 
   exportReport: async (id: string, format: string, include_charts = true, detailed = false) => {
-    const response = await api.post(`/reports/${id}/export/`, {
+    const response = await api.post(`/analytics/reports/${id}/export/`, {
       format,
       include_charts,
       detailed,
@@ -124,7 +124,7 @@ export const analyticsService = {
 
   // Calculate
   calculate: async (data: any) => {
-    const response = await api.post('/calculate/', data)
+    const response = await api.post('/analytics/calculate/', data)
     return response.data
   },
 }

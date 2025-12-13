@@ -42,7 +42,7 @@ export const alertsService = {
   },
 
   getAlert: async (id: string) => {
-    const response = await api.get(`/alerts/${id}/`)
+    const response = await api.get(`/alerts/alerts/${id}/`)
     return response.data
   },
 
@@ -63,33 +63,33 @@ export const alertsService = {
   },
 
   updateAlert: async (id: string, data: any) => {
-    const response = await api.put(`/alerts/${id}/`, data)
+    const response = await api.put(`/alerts/alerts/${id}/`, data)
     return response.data
   },
 
   partialUpdateAlert: async (id: string, data: any) => {
-    const response = await api.patch(`/alerts/${id}/`, data)
+    const response = await api.patch(`/alerts/alerts/${id}/`, data)
     return response.data
   },
 
   deleteAlert: async (id: string) => {
-    const response = await api.delete(`/alerts/${id}/`)
+    const response = await api.delete(`/alerts/alerts/${id}/`)
     return response.data
   },
 
   // Alert Actions
   muteAlert: async (id: string, duration_minutes?: number) => {
-    const response = await api.post(`/alerts/${id}/mute/`, { duration_minutes })
+    const response = await api.post(`/alerts/alerts/${id}/mute/`, { duration_minutes })
     return response.data
   },
 
   unmuteAlert: async (id: string) => {
-    const response = await api.post(`/alerts/${id}/unmute/`)
+    const response = await api.post(`/alerts/alerts/${id}/unmute/`)
     return response.data
   },
 
   acknowledgeAlert: async (id: string, acknowledged_by?: string, notes?: string) => {
-    const response = await api.post(`/alerts/${id}/acknowledge/`, {
+    const response = await api.post(`/alerts/alerts/${id}/acknowledge/`, {
       acknowledged_by,
       notes,
     })
@@ -97,7 +97,7 @@ export const alertsService = {
   },
 
   resolveAlert: async (id: string, resolved_by?: string, resolution_notes?: string) => {
-    const response = await api.post(`/alerts/${id}/resolve/`, {
+    const response = await api.post(`/alerts/alerts/${id}/resolve/`, {
       resolved_by,
       resolution_notes,
     })
