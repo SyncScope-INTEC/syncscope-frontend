@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ConfirmationModal } from "@/components/modals/confirmation-modal"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 export default function ForgotPassword() {
   const router = useRouter()
@@ -19,12 +20,32 @@ export default function ForgotPassword() {
     e.preventDefault()
     setIsLoading(true)
 
-    // Simular envío con animación de carga (1 segundo)
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    try {
+      const authUrl = process.env.NEXT_PUBLIC_AUTH_URL
+      const response = await fetch(`${authUrl}/auth/forgot-password/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
 
-    setIsLoading(false)
-    setShowSuccessModal(true)
-    setEmail("")
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Error al enviar el código')
+      }
+
+      setShowSuccessModal(true)
+      toast.success('Código enviado a tu correo')
+
+      // Redirigir a la página de verificación después de 2 segundos
+      setTimeout(() => {
+        router.push(`/auth/verify-reset-code?email=${encodeURIComponent(email)}`)
+      }, 2000)
+    } catch (error: any) {
+      console.error('Error:', error)
+      toast.error(error.message || 'Error al enviar el código')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -89,7 +110,7 @@ export default function ForgotPassword() {
                       Enviando...
                     </div>
                   ) : (
-                    "Enviar solicitud"
+                    "Enviar código"
                   )}
                 </Button>
               </form>
@@ -103,7 +124,7 @@ export default function ForgotPassword() {
         isOpen={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
         type="success"
-        message="Se ha enviado un enlace de recuperación a tu correo electrónico."
+        message="Se ha enviado un código de verificación a tu correo electrónico."
       />
 
       <Footer />
