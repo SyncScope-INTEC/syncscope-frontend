@@ -1,43 +1,9 @@
-import axios from 'axios'
-
-const GATEWAY_URL = process.env.NEXT_PUBLIC_GATEWAY_URL
-
-const api = axios.create({
-  baseURL: `${GATEWAY_URL}/monitoring`,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-})
-
-// Interceptor para agregar token
-api.interceptors.request.use(
-  (config) => {
-    if (typeof window !== 'undefined') {
-      const state = localStorage.getItem('persist:root')
-      if (state) {
-        try {
-          const parsedState = JSON.parse(state)
-          const authState = JSON.parse(parsedState.auth)
-          const token = authState.accessToken
-          if (token) {
-            config.headers.Authorization = `Bearer ${token}`
-          }
-        } catch (error) {
-          console.error('Error parsing token:', error)
-        }
-      }
-    }
-    return config
-  },
-  (error) => {
-    return Promise.reject(error)
-  }
-)
+import { monitoringApi as api } from './api'
 
 export const monitoringService = {
   // Sessions
   getAllSessions: async (params?: { start_date?: string; end_date?: string; user_id?: string }) => {
-    const response = await api.get('/sessions/', { params })
+    const response = await api.get('/monitoring/sessions/', { params })
     return response.data
   },
 
@@ -61,7 +27,7 @@ export const monitoringService = {
     project_id?: string
     user_id?: string
   }) => {
-    const response = await api.get('/code-metrics/', { params })
+    const response = await api.get('/monitoring/code-metrics/', { params })
     return response.data
   },
 
@@ -80,7 +46,7 @@ export const monitoringService = {
     metrics_metadata?: any
     calculated_at: string
   }) => {
-    const response = await api.post('/metrics/code/', data)
+    const response = await api.post('/monitoring/metrics/code/', data)
     return response.data
   },
 
@@ -91,7 +57,7 @@ export const monitoringService = {
     user_id?: string
     activity_type?: string
   }) => {
-    const response = await api.get('/activities/', { params })
+    const response = await api.get('/monitoring/activities/', { params })
     return response.data
   },
 
@@ -102,7 +68,7 @@ export const monitoringService = {
     duration_seconds?: number
     metadata?: any
   }) => {
-    const response = await api.post('/activities/', data)
+    const response = await api.post('/monitoring/activities/', data)
     return response.data
   },
 
@@ -113,7 +79,7 @@ export const monitoringService = {
     user_id?: string
     event_type?: string
   }) => {
-    const response = await api.get('/events/', { params })
+    const response = await api.get('/monitoring/events/', { params })
     return response.data
   },
 
@@ -123,7 +89,7 @@ export const monitoringService = {
     description?: string
     metadata?: any
   }) => {
-    const response = await api.post('/events/', data)
+    const response = await api.post('/monitoring/events/', data)
     return response.data
   },
 
@@ -134,7 +100,7 @@ export const monitoringService = {
     user_id?: string
     metric_type?: string
   }) => {
-    const response = await api.get('/metrics/', { params })
+    const response = await api.get('/monitoring/metrics/', { params })
     return response.data
   },
 }

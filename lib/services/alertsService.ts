@@ -1,38 +1,4 @@
-import axios from 'axios'
-
-const GATEWAY_URL = process.env.NEXT_PUBLIC_GATEWAY_URL
-
-const api = axios.create({
-  baseURL: `${GATEWAY_URL}/alerts`,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-})
-
-// Interceptor para agregar token
-api.interceptors.request.use(
-  (config) => {
-    if (typeof window !== 'undefined') {
-      const state = localStorage.getItem('persist:root')
-      if (state) {
-        try {
-          const parsedState = JSON.parse(state)
-          const authState = JSON.parse(parsedState.auth)
-          const token = authState.accessToken
-          if (token) {
-            config.headers.Authorization = `Bearer ${token}`
-          }
-        } catch (error) {
-          console.error('Error parsing token:', error)
-        }
-      }
-    }
-    return config
-  },
-  (error) => {
-    return Promise.reject(error)
-  }
-)
+import { alertsApi as api } from './api'
 
 export const alertsService = {
   // Alerts CRUD
@@ -42,7 +8,7 @@ export const alertsService = {
   },
 
   getAlert: async (id: string) => {
-    const response = await api.get(`/alerts/alerts/${id}/`)
+    const response = await api.get(`/alerts/${id}/`)
     return response.data
   },
 
@@ -63,33 +29,33 @@ export const alertsService = {
   },
 
   updateAlert: async (id: string, data: any) => {
-    const response = await api.put(`/alerts/alerts/${id}/`, data)
+    const response = await api.put(`/alerts/${id}/`, data)
     return response.data
   },
 
   partialUpdateAlert: async (id: string, data: any) => {
-    const response = await api.patch(`/alerts/alerts/${id}/`, data)
+    const response = await api.patch(`/alerts/${id}/`, data)
     return response.data
   },
 
   deleteAlert: async (id: string) => {
-    const response = await api.delete(`/alerts/alerts/${id}/`)
+    const response = await api.delete(`/alerts/${id}/`)
     return response.data
   },
 
   // Alert Actions
   muteAlert: async (id: string, duration_minutes?: number) => {
-    const response = await api.post(`/alerts/alerts/${id}/mute/`, { duration_minutes })
+    const response = await api.post(`/alerts/${id}/mute/`, { duration_minutes })
     return response.data
   },
 
   unmuteAlert: async (id: string) => {
-    const response = await api.post(`/alerts/alerts/${id}/unmute/`)
+    const response = await api.post(`/alerts/${id}/unmute/`)
     return response.data
   },
 
   acknowledgeAlert: async (id: string, acknowledged_by?: string, notes?: string) => {
-    const response = await api.post(`/alerts/alerts/${id}/acknowledge/`, {
+    const response = await api.post(`/alerts/${id}/acknowledge/`, {
       acknowledged_by,
       notes,
     })
@@ -97,7 +63,7 @@ export const alertsService = {
   },
 
   resolveAlert: async (id: string, resolved_by?: string, resolution_notes?: string) => {
-    const response = await api.post(`/alerts/alerts/${id}/resolve/`, {
+    const response = await api.post(`/alerts/${id}/resolve/`, {
       resolved_by,
       resolution_notes,
     })

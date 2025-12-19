@@ -1,38 +1,4 @@
-import axios from 'axios'
-
-const GATEWAY_URL = process.env.NEXT_PUBLIC_GATEWAY_URL
-
-const api = axios.create({
-  baseURL: `${GATEWAY_URL}/analytics`,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-})
-
-// Interceptor para agregar token
-api.interceptors.request.use(
-  (config) => {
-    if (typeof window !== 'undefined') {
-      const state = localStorage.getItem('persist:root')
-      if (state) {
-        try {
-          const parsedState = JSON.parse(state)
-          const authState = JSON.parse(parsedState.auth)
-          const token = authState.accessToken
-          if (token) {
-            config.headers.Authorization = `Bearer ${token}`
-          }
-        } catch (error) {
-          console.error('Error parsing token:', error)
-        }
-      }
-    }
-    return config
-  },
-  (error) => {
-    return Promise.reject(error)
-  }
-)
+import { analyticsApi as api } from './api'
 
 export const analyticsService = {
   // Dashboard

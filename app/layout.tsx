@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Space_Grotesk, Readex_Pro } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { ReduxProvider } from '@/components/providers/redux-provider'
+import { AuthProvider } from '@/components/providers/auth-provider'
 import { Toaster } from 'sonner'
 import './globals.css'
 
@@ -33,8 +34,10 @@ export default function RootLayout({
     <html lang="en" className={`${spaceGrotesk.variable} ${readexPro.variable}`}>
       <body className="font-sans">
         <ReduxProvider>
-          {children}
-          <Toaster position="top-right" richColors />
+          <AuthProvider>
+            {children}
+            <Toaster position="top-right" richColors />
+          </AuthProvider>
         </ReduxProvider>
         <Analytics />
       </body>

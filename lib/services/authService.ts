@@ -1,39 +1,4 @@
-import axios from 'axios'
-
-const AUTH_API_URL = process.env.NEXT_PUBLIC_AUTH_URL
-const API_URL = `${AUTH_API_URL}/auth`
-
-const api = axios.create({
-  baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-})
-
-// Interceptor para agregar token a las peticiones
-api.interceptors.request.use(
-  (config) => {
-    if (typeof window !== 'undefined') {
-      const state = localStorage.getItem('persist:root')
-      if (state) {
-        try {
-          const parsedState = JSON.parse(state)
-          const authState = JSON.parse(parsedState.auth)
-          const token = authState.accessToken
-          if (token) {
-            config.headers.Authorization = `Bearer ${token}`
-          }
-        } catch (error) {
-          console.error('Error parsing token:', error)
-        }
-      }
-    }
-    return config
-  },
-  (error) => {
-    return Promise.reject(error)
-  }
-)
+import { authApi as api } from './api'
 
 export const authService = {
   // Auth básico

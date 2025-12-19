@@ -1,43 +1,9 @@
-import axios from 'axios'
-
-const GATEWAY_URL = process.env.NEXT_PUBLIC_GATEWAY_URL
-
-const api = axios.create({
-  baseURL: `${GATEWAY_URL}/management`,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-})
-
-// Interceptor para agregar token
-api.interceptors.request.use(
-  (config) => {
-    if (typeof window !== 'undefined') {
-      const state = localStorage.getItem('persist:root')
-      if (state) {
-        try {
-          const parsedState = JSON.parse(state)
-          const authState = JSON.parse(parsedState.auth)
-          const token = authState.accessToken
-          if (token) {
-            config.headers.Authorization = `Bearer ${token}`
-          }
-        } catch (error) {
-          console.error('Error parsing token:', error)
-        }
-      }
-    }
-    return config
-  },
-  (error) => {
-    return Promise.reject(error)
-  }
-)
+import { managementApi as api } from './api'
 
 export const managementService = {
   // Projects CRUD
   getAllProjects: async (params?: { page?: number }) => {
-    const response = await api.get('/projects/', { params })
+    const response = await api.get('/management/projects/', { params })
     return response.data
   },
 
@@ -53,7 +19,7 @@ export const managementService = {
     repository_url?: string
     url?: string
   }) => {
-    const response = await api.post('/projects/', data)
+    const response = await api.post('/management/projects/', data)
     return response.data
   },
 
@@ -74,7 +40,7 @@ export const managementService = {
 
   // Project Members
   getAllProjectMembers: async (params?: { page?: number }) => {
-    const response = await api.get('/project-members/', { params })
+    const response = await api.get('/management/project-members/', { params })
     return response.data
   },
 
@@ -88,7 +54,7 @@ export const managementService = {
     user_id: string // UUID
     role: 'owner' | 'contributor' | 'viewer'
   }) => {
-    const response = await api.post('/project-members/', data)
+    const response = await api.post('/management/project-members/', data)
     return response.data
   },
 
@@ -104,7 +70,7 @@ export const managementService = {
 
   // Teams CRUD
   getAllTeams: async (params?: { page?: number }) => {
-    const response = await api.get('/teams/', { params })
+    const response = await api.get('/management/teams/', { params })
     return response.data
   },
 
@@ -114,7 +80,7 @@ export const managementService = {
   },
 
   createTeam: async (data: { name: string; description?: string }) => {
-    const response = await api.post('/teams/', data)
+    const response = await api.post('/management/teams/', data)
     return response.data
   },
 
@@ -153,7 +119,7 @@ export const managementService = {
 
   // Team Members (separate endpoint)
   getAllTeamMembers: async (params?: { page?: number }) => {
-    const response = await api.get('/team-members/', { params })
+    const response = await api.get('/management/team-members/', { params })
     return response.data
   },
 
@@ -167,7 +133,7 @@ export const managementService = {
     user_id: string // UUID
     role: 'lead' | 'developer' | 'senior_developer' | 'junior_developer' | 'intern' | 'designer' | 'qa'
   }) => {
-    const response = await api.post('/team-members/', data)
+    const response = await api.post('/management/team-members/', data)
     return response.data
   },
 
@@ -183,7 +149,7 @@ export const managementService = {
 
   // Organization Settings
   getOrganizationSettings: async () => {
-    const response = await api.get('/organization/settings/')
+    const response = await api.get('/management/organization/settings/')
     return response.data
   },
 
@@ -196,7 +162,7 @@ export const managementService = {
   },
 
   verifyDeletionPassword: async (data: { password: string }) => {
-    const response = await api.post('/organization/settings/verify_deletion_password/', data)
+    const response = await api.post('/management/organization/settings/verify_deletion_password/', data)
     return response.data
   },
 
@@ -207,7 +173,7 @@ export const managementService = {
 
   // Integrations
   getAllIntegrations: async (params?: { page?: number }) => {
-    const response = await api.get('/integrations/', { params })
+    const response = await api.get('/management/integrations/', { params })
     return response.data
   },
 
@@ -222,7 +188,7 @@ export const managementService = {
     config_data: any
     is_active?: boolean
   }) => {
-    const response = await api.post('/integrations/', data)
+    const response = await api.post('/management/integrations/', data)
     return response.data
   },
 
@@ -238,7 +204,7 @@ export const managementService = {
 
   // GitHub Integration
   getAllGitHubIntegrations: async (params?: { page?: number }) => {
-    const response = await api.get('/github-integrations/', { params })
+    const response = await api.get('/management/github-integrations/', { params })
     return response.data
   },
 
@@ -253,7 +219,7 @@ export const managementService = {
     repository_name: string
     is_active?: boolean
   }) => {
-    const response = await api.post('/github-integrations/', data)
+    const response = await api.post('/management/github-integrations/', data)
     return response.data
   },
 
@@ -274,7 +240,7 @@ export const managementService = {
 
   // Commits
   getAllCommits: async (params?: { page?: number }) => {
-    const response = await api.get('/commits/', { params })
+    const response = await api.get('/management/commits/', { params })
     return response.data
   },
 

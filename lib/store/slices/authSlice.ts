@@ -23,6 +23,8 @@ interface AuthState {
   accessToken: string | null
   refreshToken: string | null
   sessionToken: string | null
+  tokenExpiresAt: number | null
+  lastActivity: number | null
   isAuthenticated: boolean
   loading: boolean
   error: string | null
@@ -33,6 +35,8 @@ const initialState: AuthState = {
   accessToken: null,
   refreshToken: null,
   sessionToken: null,
+  tokenExpiresAt: null,
+  lastActivity: null,
   isAuthenticated: false,
   loading: false,
   error: null,
@@ -115,6 +119,46 @@ export const verifyToken = createAsyncThunk('auth/verifyToken', async (token: st
   }
 })
 
+export const refreshAccessToken = createAsyncThunk(
+  'auth/refreshAccessToken',
+  async (refreshToken: string, { rejectWithValue }) => {
+    try {
+      const response = await authService.refreshToken(refreshToken)
+      return response
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Error al refrescar token')
+    }
+  }
+)
+
+export const validateSession = createAsyncThunk(
+  'auth/validateSession',
+  async (_, { getState, dispatch, rejectWithValue }) => {
+    try {
+      const state = getState() as { auth: AuthState }
+      const { accessToken, refreshToken, tokenExpiresAt } = state.auth
+
+      if (!accessToken || !refreshToken) {
+        return rejectWithValue('No hay tokens disponibles')
+      }
+
+      const now = Date.now()
+
+      // Si el token expira en menos de 5 minutos, refrescarlo
+      if (tokenExpiresAt && tokenExpiresAt - now < 5 * 60 * 1000) {
+        const result = await dispatch(refreshAccessToken(refreshToken)).unwrap()
+        return result
+      }
+
+      // Verificar que el token sea válido
+      const response = await authService.verifyToken(accessToken)
+      return response
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Sesión inválida')
+    }
+  }
+)
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -135,7 +179,13 @@ const authSlice = createSlice({
       state.accessToken = action.payload.accessToken
       state.refreshToken = action.payload.refreshToken
       state.sessionToken = action.payload.sessionToken
+      // Access token expira en 60 minutos
+      state.tokenExpiresAt = Date.now() + 60 * 60 * 1000
+      state.lastActivity = Date.now()
       state.isAuthenticated = true
+    },
+    updateLastActivity: (state) => {
+      state.lastActivity = Date.now()
     },
     logoutLocal: () => {
       return initialState
@@ -154,6 +204,8 @@ const authSlice = createSlice({
         state.accessToken = action.payload.tokens.access
         state.refreshToken = action.payload.tokens.refresh
         state.sessionToken = action.payload.session_token
+        state.tokenExpiresAt = Date.now() + 60 * 60 * 1000
+        state.lastActivity = Date.now()
         state.isAuthenticated = true
       })
       .addCase(login.rejected, (state, action) => {
@@ -173,6 +225,8 @@ const authSlice = createSlice({
         state.accessToken = action.payload.tokens.access
         state.refreshToken = action.payload.tokens.refresh
         state.sessionToken = action.payload.session_token
+        state.tokenExpiresAt = Date.now() + 60 * 60 * 1000
+        state.lastActivity = Date.now()
         state.isAuthenticated = true
       })
       .addCase(register.rejected, (state, action) => {
@@ -206,6 +260,38 @@ const authSlice = createSlice({
         return initialState
       })
 
+    // Refresh Access Token
+    builder
+      .addCase(refreshAccessToken.pending, (state) => {
+        state.loading = true
+      })
+      .addCase(refreshAccessToken.fulfilled, (state, action) => {
+        state.loading = false
+        state.accessToken = action.payload.access
+        state.tokenExpiresAt = Date.now() + 60 * 60 * 1000
+        state.lastActivity = Date.now()
+      })
+      .addCase(refreshAccessToken.rejected, () => {
+        return initialState
+      })
+
+    // Validate Session
+    builder
+      .addCase(validateSession.pending, (state) => {
+        state.loading = true
+      })
+      .addCase(validateSession.fulfilled, (state, action) => {
+        state.loading = false
+        if (action.payload.access) {
+          state.accessToken = action.payload.access
+          state.tokenExpiresAt = Date.now() + 60 * 60 * 1000
+        }
+        state.lastActivity = Date.now()
+      })
+      .addCase(validateSession.rejected, () => {
+        return initialState
+      })
+
     // Limpiar todo cuando se purga el persist
     builder.addCase(PURGE, () => {
       return initialState
@@ -213,5 +299,5 @@ const authSlice = createSlice({
   },
 })
 
-export const { clearError, setCredentials, logoutLocal } = authSlice.actions
+export const { clearError, setCredentials, updateLastActivity, logoutLocal } = authSlice.actions
 export default authSlice.reducer
