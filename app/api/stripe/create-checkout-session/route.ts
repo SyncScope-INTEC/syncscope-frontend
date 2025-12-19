@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { stripe } from '@/lib/stripe/config'
+import { getStripe } from '@/lib/stripe/config'
 import { STRIPE_PLANS, type PlanType } from '@/lib/stripe/plans'
 
 export async function POST(req: NextRequest) {
   try {
+    const stripe = getStripe()
     const body = await req.json()
     const { plan } = body as { plan: PlanType }
 
