@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getStripe, STRIPE_CONFIG } from '@/lib/stripe/config'
+import { stripe, STRIPE_CONFIG } from '@/lib/stripe/config'
 import { generateSecurePassword, getCustomFieldValue, sendWelcomeEmail } from '@/lib/stripe/utils'
 import Stripe from 'stripe'
 
 export async function POST(req: NextRequest) {
   try {
-    const stripe = getStripe()
     const body = await req.text()
     const signature = req.headers.get('stripe-signature')
 

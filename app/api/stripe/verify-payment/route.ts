@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getStripe } from '@/lib/stripe/config'
+import { stripe } from '@/lib/stripe/config'
 
 export async function POST(req: NextRequest) {
   try {
-    const stripe = getStripe() // Validates STRIPE_SECRET_KEY at runtime
     const body = await req.json()
     const { sessionId } = body as { sessionId: string }
 

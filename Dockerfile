@@ -77,9 +77,7 @@ EXPOSE 8080
 ENV HOSTNAME="0.0.0.0"
 
 # Stripe secret environment variables (set at runtime via Railway)
-# DO NOT set these as build args - they should be runtime secrets
 # These will be overridden by Railway environment variables
-ENV STRIPE_SECRET_KEY=""
 ENV STRIPE_WEBHOOK_SECRET=""
 ENV STRIPE_PRICE_STARTER=""
 ENV STRIPE_PRICE_GROWTH=""
