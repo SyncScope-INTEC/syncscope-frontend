@@ -3,12 +3,9 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Check } from "lucide-react"
-import { ConfirmationModal } from "@/components/modals/confirmation-modal"
 
 type PlanType = 'starter' | 'enterprise' | 'growth'
 
@@ -24,38 +21,35 @@ const planDetails: Record<PlanType, PlanInfo> = {
 }
 
 export default function PricingPage() {
-  const [selectedPlan, setSelectedPlan] = useState<PlanType | null>(null)
-  const [showCancelModal, setShowCancelModal] = useState(false)
-  const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [loadingPlan, setLoadingPlan] = useState<PlanType | null>(null)
 
-  const handleSelectPlan = (plan: PlanType) => {
-    setSelectedPlan(plan)
-    // Scroll suave al formulario
-    setTimeout(() => {
-      document.getElementById('signup-form')?.scrollIntoView({ behavior: 'smooth' })
-    }, 100)
-  }
-
-  const handleCancelClick = () => {
-    setShowCancelModal(true)
-  }
-
-  const handleConfirmCancel = () => {
-    setShowCancelModal(false)
-    setSelectedPlan(null)
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSelectPlan = async (plan: PlanType) => {
     setIsLoading(true)
+    setLoadingPlan(plan)
 
-    // Simular envío con animación de carga (1 segundo)
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    try {
+      // Crear sesión de Stripe Checkout
+      const response = await fetch('/api/stripe/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan }),
+      })
 
-    setIsLoading(false)
-    setSelectedPlan(null)
-    setShowSuccessModal(true)
+      if (!response.ok) {
+        throw new Error('Error al crear sesión de pago')
+      }
+
+      const { url } = await response.json()
+
+      // Redirigir a Stripe
+      window.location.href = url
+    } catch (error: any) {
+      console.error('Error:', error)
+      alert('Error al procesar el pago. Por favor intenta nuevamente.')
+      setIsLoading(false)
+      setLoadingPlan(null)
+    }
   }
 
   return (
@@ -123,8 +117,9 @@ export default function PricingPage() {
               <Button
                 onClick={() => handleSelectPlan('starter')}
                 className="w-full bg-brand hover:bg-brand-hover text-brand-foreground rounded-full"
+                disabled={isLoading}
               >
-                Iniciar
+                {loadingPlan === 'starter' ? 'Procesando...' : 'Iniciar'}
               </Button>
             </div>
           </Card>
@@ -169,8 +164,9 @@ export default function PricingPage() {
               <Button
                 onClick={() => handleSelectPlan('enterprise')}
                 className="w-full bg-brand hover:bg-brand-hover text-brand-foreground rounded-full"
+                disabled={isLoading}
               >
-                Iniciar
+                {loadingPlan === 'enterprise' ? 'Procesando...' : 'Iniciar'}
               </Button>
             </div>
           </Card>
@@ -213,125 +209,14 @@ export default function PricingPage() {
               <Button
                 onClick={() => handleSelectPlan('growth')}
                 className="w-full bg-brand hover:bg-brand-hover text-brand-foreground rounded-full"
+                disabled={isLoading}
               >
-                Iniciar
+                {loadingPlan === 'growth' ? 'Procesando...' : 'Iniciar'}
               </Button>
             </div>
           </Card>
         </div>
       </section>
-
-      {/* Signup Form Section - Solo visible cuando se selecciona un plan */}
-      {selectedPlan && (
-        <section id="signup-form" className="px-6 py-16 max-w-4xl mx-auto">
-          <div className="space-y-8">
-            <div className="text-center">
-              <h2 className="text-3xl font-bold text-gray-900">
-                Formulario de inicio — Plan {planDetails[selectedPlan].name}
-              </h2>
-              <p className="text-gray-600 mt-2">{planDetails[selectedPlan].price}</p>
-            </div>
-
-            <Card className="p-8 border-2 border-brand bg-white/80 backdrop-blur">
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="identifier" className="text-sm font-medium text-gray-700">
-                      Identificador
-                    </Label>
-                    <Input
-                      id="identifier"
-                      type="text"
-                      required
-                      className="border-purple-200 focus:border-purple-400 focus:ring-purple-400"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="company" className="text-sm font-medium text-gray-700">
-                      Nombre de la empresa
-                    </Label>
-                    <Input
-                      id="company"
-                      type="text"
-                      required
-                      className="border-purple-200 focus:border-purple-400 focus:ring-purple-400"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
-                      Número telefónico
-                    </Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      required
-                      className="border-purple-200 focus:border-purple-400 focus:ring-purple-400"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className="text-sm font-medium text-gray-700">
-                      Correo electrónico
-                    </Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="ejemplo@correo.com"
-                      required
-                      className="border-purple-200 focus:border-purple-400 focus:ring-purple-400"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex justify-end space-x-4 pt-4">
-                  <Button
-                    type="button"
-                    onClick={handleCancelClick}
-                    variant="outline"
-                    disabled={isLoading}
-                    className="px-8 bg-brand hover:bg-brand-hover text-brand-foreground border-brand hover:border-brand-hover"
-                  >
-                    Cancelar
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={isLoading}
-                    className="px-8 bg-purple-500 hover:bg-purple-600 text-white"
-                  >
-                    {isLoading ? (
-                      <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        Enviando...
-                      </div>
-                    ) : (
-                      "Enviar"
-                    )}
-                  </Button>
-                </div>
-              </form>
-            </Card>
-          </div>
-        </section>
-      )}
-
-      {/* Modals */}
-      <ConfirmationModal
-        isOpen={showCancelModal}
-        onClose={() => setShowCancelModal(false)}
-        type="cancel"
-        onConfirm={handleConfirmCancel}
-      />
-
-      <ConfirmationModal
-        isOpen={showSuccessModal}
-        onClose={() => setShowSuccessModal(false)}
-        type="success"
-        message="La solicitud fue enviada con éxito."
-      />
 
       {/* Footer */}
       <Footer />

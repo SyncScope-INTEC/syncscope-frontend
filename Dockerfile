@@ -31,11 +31,17 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ARG NEXT_PUBLIC_AUTH_URL
 ARG NEXT_PUBLIC_API_URL
 ARG NEXT_PUBLIC_GATEWAY_URL
+ARG NEXT_PUBLIC_DEV_MODE
+ARG NEXT_PUBLIC_URL
+ARG NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 
 # Make them available during build time
 ENV NEXT_PUBLIC_AUTH_URL=$NEXT_PUBLIC_AUTH_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_GATEWAY_URL=$NEXT_PUBLIC_GATEWAY_URL
+ENV NEXT_PUBLIC_DEV_MODE=$NEXT_PUBLIC_DEV_MODE
+ENV NEXT_PUBLIC_URL=$NEXT_PUBLIC_URL
+ENV NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=$NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 
 # Build Next.js application
 RUN pnpm run build
@@ -69,6 +75,15 @@ USER nextjs
 EXPOSE 8080
 
 ENV HOSTNAME="0.0.0.0"
+
+# Stripe secret environment variables (set at runtime via Railway)
+# DO NOT set these as build args - they should be runtime secrets
+# These will be overridden by Railway environment variables
+ENV STRIPE_SECRET_KEY=""
+ENV STRIPE_WEBHOOK_SECRET=""
+ENV STRIPE_PRICE_STARTER=""
+ENV STRIPE_PRICE_GROWTH=""
+ENV STRIPE_PRICE_ENTERPRISE=""
 
 # server.js is created by next build from the standalone output
 # https://nextjs.org/docs/pages/api-reference/next-config-js/output
