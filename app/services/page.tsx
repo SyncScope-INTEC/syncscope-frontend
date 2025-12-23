@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
-import { Search, Filter, Play, FileText, Download } from "lucide-react"
+import { Search, Filter, FileText, Download } from "lucide-react"
 import { DemoModal } from "@/components/modals/demo-modal"
 import { ConfirmationModal } from "@/components/modals/confirmation-modal"
 
@@ -79,38 +79,40 @@ export default function ServicesPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left Column - Data Table */}
+            {/* Left Column - Video Demo */}
             <div className="lg:col-span-2">
               <Card className="p-4 bg-purple-100 border-purple-200">
-                {/* Table Header */}
-                <div className="grid grid-cols-3 gap-4 mb-4 pb-2 border-b border-purple-200">
-                  <div className="font-semibold text-gray-700">Alerta</div>
-                  <div className="font-semibold text-gray-700">Empleado</div>
-                  <div className="font-semibold text-gray-700 flex items-center gap-2">
-                    Fecha
-                    <Badge className="bg-purple-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">
-                      ?
-                    </Badge>
-                  </div>
+                {/* Video Player */}
+                <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden">
+                  <video
+                    className="w-full h-full object-contain"
+                    controls
+                    playsInline
+                    preload="auto"
+                    onError={(e) => {
+                      console.error('Error loading video:', e)
+                      const target = e.target as HTMLVideoElement
+                      target.style.display = 'none'
+                      const parent = target.parentElement
+                      if (parent) {
+                        parent.innerHTML = '<div class="flex items-center justify-center h-full text-white"><p>Error al cargar el video. Por favor, recarga la página.</p></div>'
+                      }
+                    }}
+                  >
+                    <source src="/demo.mov" type="video/quicktime" />
+                    <source src="/demo.mov" type="video/mp4" />
+                    Tu navegador no soporta la reproducción de video.
+                  </video>
                 </div>
 
-                {/* Table Rows */}
-                <div className="space-y-3">
-                  {Array.from({ length: 8 }, (_, i) => (
-                    <div key={i} className="grid grid-cols-3 gap-4 py-2 bg-purple-200/50 rounded">
-                      <div className="h-4 bg-purple-300 rounded"></div>
-                      <div className="h-4 bg-purple-300 rounded"></div>
-                      <div className="h-4 bg-purple-300 rounded"></div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Action Button */}
-                <div className="mt-4 flex justify-end">
-                  <Button className="bg-purple-500 hover:bg-purple-600 text-white rounded-full px-6">
-                    <Play className="w-4 h-4 mr-2" />
-                    Ver video
-                  </Button>
+                {/* Video Description */}
+                <div className="mt-4">
+                  <h3 className="font-semibold text-gray-900 mb-2">
+                    Demo de SyncScope en Acción
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Mira cómo SyncScope te ayuda a monitorear y optimizar el rendimiento de tu equipo de desarrollo.
+                  </p>
                 </div>
               </Card>
             </div>

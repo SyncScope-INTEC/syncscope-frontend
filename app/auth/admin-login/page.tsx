@@ -23,7 +23,18 @@ export default function AdminLogin() {
     email: "",
     password: "",
   })
+  const [rememberMe, setRememberMe] = useState(false)
   const [githubLoading, setGithubLoading] = useState(false)
+
+  // Load saved credentials on mount
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('rememberedEmail')
+    const savedPassword = localStorage.getItem('rememberedPassword')
+    if (savedEmail && savedPassword) {
+      setFormData({ email: savedEmail, password: savedPassword })
+      setRememberMe(true)
+    }
+  }, [])
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -54,6 +65,15 @@ export default function AdminLogin() {
     }
 
     try {
+      // Save credentials if remember me is checked
+      if (rememberMe) {
+        localStorage.setItem('rememberedEmail', formData.email)
+        localStorage.setItem('rememberedPassword', formData.password)
+      } else {
+        localStorage.removeItem('rememberedEmail')
+        localStorage.removeItem('rememberedPassword')
+      }
+
       await dispatch(login({ email: formData.email, password: formData.password })).unwrap()
       toast.success("¡Bienvenido!")
       router.push("/admin/dashboard")
@@ -148,8 +168,20 @@ export default function AdminLogin() {
                   />
                 </div>
 
-                {/* Forgot Password Link */}
-                <div className="text-right">
+                {/* Remember Me Checkbox */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="rememberMe"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                      className="w-4 h-4 text-purple-600 border-purple-300 rounded focus:ring-purple-500"
+                    />
+                    <Label htmlFor="rememberMe" className="text-sm text-gray-700 cursor-pointer">
+                      Recordar mis datos
+                    </Label>
+                  </div>
                   <Link href="/auth/forgot-password" className="text-brand-dark hover:text-brand-hover text-sm">
                     ¿Olvidaste tu contraseña?
                   </Link>

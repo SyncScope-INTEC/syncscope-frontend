@@ -79,7 +79,29 @@ export const analyticsService = {
     return response.data
   },
 
-  exportReport: async (id: string, format: string, include_charts = true, detailed = false) => {
+  exportReport: async (
+    id: string, 
+    format: string, 
+    include_charts = true, 
+    detailed = false,
+    reportData?: {
+      alerts?: any[]
+      reportName?: string
+      reportType?: string
+      generatedAt?: string
+    }
+  ) => {
+    // If reportData is provided, use the local PDF generation endpoint
+    if (reportData && format === 'pdf') {
+      const dataParam = encodeURIComponent(JSON.stringify(reportData))
+      return {
+        url: `/api/generate-report-pdf?data=${dataParam}`,
+        format: 'pdf',
+        created_at: new Date().toISOString()
+      }
+    }
+
+    // Otherwise, use the backend API
     const response = await api.post(`/analytics/reports/${id}/export/`, {
       format,
       include_charts,

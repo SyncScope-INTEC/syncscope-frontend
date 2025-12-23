@@ -41,7 +41,7 @@ export default function AlertsHistoryPage() {
           id: alert.id,
           title: alert.title,
           employee: alert.user_name || `${user?.first_name || 'Usuario'} ${user?.last_name || ''}`,
-          date: new Date(alert.created_at).toLocaleDateString('es-ES', {
+          date: new Date(alert.timestamp || alert.created_at).toLocaleDateString('es-ES', {
             day: '2-digit',
             month: 'long',
             year: 'numeric',
@@ -134,8 +134,19 @@ export default function AlertsHistoryPage() {
         return
       }
 
-      // Exportar a PDF
-      const exported = await analyticsService.exportReport(report.id, 'pdf', true, true)
+      // Exportar a PDF con datos de alertas
+      const exported = await analyticsService.exportReport(
+        report.id,
+        'pdf',
+        true,
+        true,
+        {
+          alerts: filteredAlerts,
+          reportName: `Alertas - ${new Date().toLocaleDateString('es-ES')}`,
+          reportType: reportType,
+          generatedAt: new Date().toISOString()
+        }
+      )
 
       if (exported?.url) {
         window.open(exported.url, '_blank')
