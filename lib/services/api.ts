@@ -82,29 +82,52 @@ const responseErrorInterceptor = async (error: any) => {
           const parsedState = JSON.parse(state)
           const authState = JSON.parse(parsedState.auth)
           const refreshToken = authState.refreshToken
+          const tokenExpiresAt = authState.tokenExpiresAt
 
-          if (refreshToken) {
-            // Llamar al endpoint de refresh
-            const response = await axios.post(`${AUTH_API_URL}/auth/refresh-token/`, {
-              refresh: refreshToken,
-            })
+          // Verificar si el access token ya expiró
+          const now = Date.now()
+          const isAccessTokenExpired = tokenExpiresAt && tokenExpiresAt < now
 
-            const newAccessToken = response.data.access
-
-            // Actualizar el token en localStorage
-            authState.accessToken = newAccessToken
-            authState.tokenExpiresAt = Date.now() + 60 * 60 * 1000
-            parsedState.auth = JSON.stringify(authState)
-            localStorage.setItem('persist:root', JSON.stringify(parsedState))
-
-            // Reintentar la petición original con el nuevo token
-            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
-            return axios(originalRequest)
+          if (isAccessTokenExpired) {
+            console.log('Access token expired, attempting refresh...')
           }
+
+          // Si no hay refresh token, limpiar y redirigir
+          if (!refreshToken) {
+            console.log('No refresh token available, clearing session...')
+            localStorage.removeItem('persist:root')
+            window.location.href = '/auth/admin-login'
+            return Promise.reject(error)
+          }
+
+          // Intentar refrescar el token
+          const response = await axios.post(`${AUTH_API_URL}/auth/refresh-token/`, {
+            refresh: refreshToken,
+          })
+
+          const newAccessToken = response.data.access
+
+          // Actualizar el token en localStorage
+          authState.accessToken = newAccessToken
+          authState.tokenExpiresAt = Date.now() + 60 * 60 * 1000
+          parsedState.auth = JSON.stringify(authState)
+          localStorage.setItem('persist:root', JSON.stringify(parsedState))
+
+          console.log('Token refreshed successfully')
+
+          // Reintentar la petición original con el nuevo token
+          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
+          return axios(originalRequest)
+        } else {
+          // No hay estado guardado, limpiar y redirigir
+          console.log('No persisted state found, redirecting to login...')
+          localStorage.removeItem('persist:root')
+          window.location.href = '/auth/admin-login'
         }
       }
-    } catch (refreshError) {
-      // Si falla el refresh, limpiar el estado y redirigir al login
+    } catch (refreshError: any) {
+      // Si falla el refresh (refresh token expirado o inválido), limpiar el estado y redirigir
+      console.log('Refresh token failed or expired, clearing session...', refreshError.response?.status)
       if (typeof window !== 'undefined') {
         localStorage.removeItem('persist:root')
         window.location.href = '/auth/admin-login'

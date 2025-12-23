@@ -36,12 +36,11 @@ export function ProtectedRoute({
   useEffect(() => {
     if (isClient && !loading && isAuthenticated && requireAdminAccess) {
       if (!canAccessAdminRoutes(user?.role)) {
-        // Redirect developers to their dashboard
-        const destination = redirectTo || '/dashboard'
-        router.push(destination)
+        // Redirect developers to access denied page
+        router.push('/auth/access-denied')
       }
     }
-  }, [isClient, loading, isAuthenticated, user, requireAdminAccess, redirectTo, router])
+  }, [isClient, loading, isAuthenticated, user, requireAdminAccess, router])
 
   // Actualizar última actividad en cada interacción
   useEffect(() => {
@@ -78,16 +77,9 @@ export function ProtectedRoute({
     return null
   }
 
-  // Check role access
+  // Check role access - will redirect if needed
   if (requireAdminAccess && !canAccessAdminRoutes(user?.role)) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Acceso Denegado</h2>
-          <p className="text-gray-600">Redirigiendo...</p>
-        </div>
-      </div>
-    )
+    return null
   }
 
   return <>{children}</>
