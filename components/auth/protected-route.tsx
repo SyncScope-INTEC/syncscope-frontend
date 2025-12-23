@@ -4,11 +4,22 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks'
 import { updateLastActivity } from '@/lib/store/slices/authSlice'
+import { canAccessAdminRoutes } from '@/lib/utils/roleUtils'
 
-export function ProtectedRoute({ children }: { children: React.ReactNode }) {
+interface ProtectedRouteProps {
+  children: React.ReactNode
+  requireAdminAccess?: boolean
+  redirectTo?: string
+}
+
+export function ProtectedRoute({ 
+  children, 
+  requireAdminAccess = false,
+  redirectTo 
+}: ProtectedRouteProps) {
   const router = useRouter()
   const dispatch = useAppDispatch()
-  const { isAuthenticated, loading } = useAppSelector((state) => state.auth)
+  const { isAuthenticated, loading, user } = useAppSelector((state) => state.auth)
   const [isClient, setIsClient] = useState(false)
 
   useEffect(() => {
@@ -20,6 +31,17 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
       router.push('/auth/admin-login')
     }
   }, [isAuthenticated, loading, router, isClient])
+
+  // Check role-based access
+  useEffect(() => {
+    if (isClient && !loading && isAuthenticated && requireAdminAccess) {
+      if (!canAccessAdminRoutes(user?.role)) {
+        // Redirect developers to their dashboard
+        const destination = redirectTo || '/dashboard'
+        router.push(destination)
+      }
+    }
+  }, [isClient, loading, isAuthenticated, user, requireAdminAccess, redirectTo, router])
 
   // Actualizar última actividad en cada interacción
   useEffect(() => {
@@ -54,6 +76,18 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   if (!isAuthenticated) {
     return null
+  }
+
+  // Check role access
+  if (requireAdminAccess && !canAccessAdminRoutes(user?.role)) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Acceso Denegado</h2>
+          <p className="text-gray-600">Redirigiendo...</p>
+        </div>
+      </div>
+    )
   }
 
   return <>{children}</>
