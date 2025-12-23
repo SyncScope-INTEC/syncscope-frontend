@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Card } from "@/components/ui/card"
 import { toast } from "sonner"
 import Link from "next/link"
+import { authService } from "@/lib/services/authService"
 
 export default function VerifyResetCodePage() {
   const router = useRouter()
@@ -35,24 +36,14 @@ export default function VerifyResetCodePage() {
     setLoading(true)
 
     try {
-      const authUrl = process.env.NEXT_PUBLIC_AUTH_URL
-      const response = await fetch(`${authUrl}/auth/verify-reset-code/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, code }),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || 'Código inválido')
-      }
+      await authService.verifyResetCode(email, code)
 
       toast.success('Código verificado correctamente')
       // Redirigir a la página de reset con el código
       router.push(`/auth/reset-password?email=${encodeURIComponent(email)}&code=${code}`)
     } catch (error: any) {
       console.error('Error verifying code:', error)
-      toast.error(error.message || 'Error al verificar el código')
+      toast.error(error.response?.data?.error || error.message || 'Error al verificar el código')
     } finally {
       setLoading(false)
     }
@@ -60,20 +51,10 @@ export default function VerifyResetCodePage() {
 
   const handleResendCode = async () => {
     try {
-      const authUrl = process.env.NEXT_PUBLIC_AUTH_URL
-      const response = await fetch(`${authUrl}/auth/forgot-password/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Error al reenviar el código')
-      }
-
+      await authService.forgotPassword(email)
       toast.success('Código reenviado a tu correo')
-    } catch (error) {
-      toast.error('Error al reenviar el código')
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Error al reenviar el código')
     }
   }
 

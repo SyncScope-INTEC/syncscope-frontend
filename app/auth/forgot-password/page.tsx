@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { ConfirmationModal } from "@/components/modals/confirmation-modal"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
+import { authService } from "@/lib/services/authService"
 
 export default function ForgotPassword() {
   const router = useRouter()
@@ -21,17 +22,7 @@ export default function ForgotPassword() {
     setIsLoading(true)
 
     try {
-      const authUrl = process.env.NEXT_PUBLIC_AUTH_URL
-      const response = await fetch(`${authUrl}/auth/forgot-password/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || 'Error al enviar el código')
-      }
+      await authService.forgotPassword(email)
 
       setShowSuccessModal(true)
       toast.success('Código enviado a tu correo')
@@ -42,7 +33,7 @@ export default function ForgotPassword() {
       }, 2000)
     } catch (error: any) {
       console.error('Error:', error)
-      toast.error(error.message || 'Error al enviar el código')
+      toast.error(error.response?.data?.error || error.message || 'Error al enviar el código')
     } finally {
       setIsLoading(false)
     }

@@ -133,4 +133,25 @@ export const authService = {
     const response = await api.delete(`/supervised-users/${id}/`)
     return response.data
   },
+
+  // Password Recovery
+  forgotPassword: async (email: string) => {
+    const response = await api.post('/forgot-password/', { email })
+    return response.data
+  },
+
+  verifyResetCode: async (email: string, code: string) => {
+    const response = await api.post('/verify-reset-code/', { email, code })
+    return response.data
+  },
+
+  resetPassword: async (email: string, code: string, newPassword: string, newPasswordConfirm: string) => {
+    const response = await api.post('/reset-password/', {
+      email,
+      code,
+      new_password: newPassword,
+      new_password_confirm: newPasswordConfirm,
+    })
+    return response.data
+  },
 }

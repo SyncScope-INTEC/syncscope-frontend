@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Card } from "@/components/ui/card"
 import { toast } from "sonner"
 import Link from "next/link"
+import { authService } from "@/lib/services/authService"
 
 export default function ResetPasswordPage() {
   const router = useRouter()
@@ -42,22 +43,7 @@ export default function ResetPasswordPage() {
     setLoading(true)
 
     try {
-      const authUrl = process.env.NEXT_PUBLIC_AUTH_URL
-      const response = await fetch(`${authUrl}/auth/reset-password/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          code,
-          password,
-          password_confirm: passwordConfirm,
-        }),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || 'Error al cambiar la contraseña')
-      }
+      await authService.resetPassword(email, code, password, passwordConfirm)
 
       toast.success('¡Contraseña cambiada exitosamente!')
       setTimeout(() => {
@@ -65,7 +51,7 @@ export default function ResetPasswordPage() {
       }, 1500)
     } catch (error: any) {
       console.error('Error resetting password:', error)
-      toast.error(error.message || 'Error al cambiar la contraseña')
+      toast.error(error.response?.data?.error || error.message || 'Error al cambiar la contraseña')
     } finally {
       setLoading(false)
     }
