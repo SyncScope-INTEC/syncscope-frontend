@@ -1,6 +1,7 @@
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
-import { ChevronDown, CheckCircle, Clock, BarChart3, Bell, Link, Lightbulb } from "lucide-react"
+import { CheckCircle, Clock, BarChart3, Bell, Link, Lightbulb } from "lucide-react"
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion"
 
 export default function FAQPage() {
   return (
@@ -23,25 +24,88 @@ export default function FAQPage() {
 
       {/* FAQ Section */}
       <section className="px-6 py-12 max-w-4xl mx-auto">
-        <div className="space-y-4">
-          {[
-            "¿Cómo protege SyncScope la información de mi equipo?",
-            "¿SyncScope funciona con equipos remotos o híbridos?",
-            "¿Qué integraciones están disponibles actualmente?",
-            "¿Cómo protegen la privacidad y los datos de mi equipo?",
-            "¿Tienen soporte técnico disponible?",
-          ].map((question, index) => (
-            <div
-              key={index}
-              className="border border-gray-200 rounded-lg p-6 bg-white hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-center justify-between cursor-pointer">
-                <h3 className="text-lg font-semibold text-gray-900">{question}</h3>
-                <ChevronDown className="w-5 h-5 text-brand-dark" />
-              </div>
-            </div>
-          ))}
-        </div>
+        <Accordion type="single" collapsible className="space-y-4">
+          <AccordionItem value="item-1" className="border border-gray-200 rounded-lg bg-white px-6">
+            <AccordionTrigger className="text-lg font-semibold text-gray-900 hover:no-underline">
+              ¿Cómo protege SyncScope la información de mi equipo?
+            </AccordionTrigger>
+            <AccordionContent className="text-gray-600 leading-relaxed">
+              SyncScope implementa múltiples capas de seguridad para proteger tu información:
+              <ul className="list-disc pl-6 mt-2 space-y-1">
+                <li>Encriptación de extremo a extremo para todos los datos en tránsito</li>
+                <li>Almacenamiento seguro con encriptación AES-256</li>
+                <li>Autenticación de dos factores (2FA) disponible</li>
+                <li>Auditorías de seguridad regulares</li>
+                <li>Cumplimiento con estándares GDPR y SOC 2</li>
+              </ul>
+              Nunca compartimos tus datos con terceros sin tu consentimiento explícito.
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="item-2" className="border border-gray-200 rounded-lg bg-white px-6">
+            <AccordionTrigger className="text-lg font-semibold text-gray-900 hover:no-underline">
+              ¿SyncScope funciona con equipos remotos o híbridos?
+            </AccordionTrigger>
+            <AccordionContent className="text-gray-600 leading-relaxed">
+              Sí, SyncScope está diseñado específicamente para equipos distribuidos. Funciona perfectamente con:
+              <ul className="list-disc pl-6 mt-2 space-y-1">
+                <li>Equipos 100% remotos</li>
+                <li>Equipos híbridos (presencial + remoto)</li>
+                <li>Equipos en diferentes zonas horarias</li>
+                <li>Colaboradores freelance o contratistas</li>
+              </ul>
+              El monitoreo automático de tiempo y las integraciones con GitHub/GitLab funcionan independientemente de la ubicación del equipo.
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="item-3" className="border border-gray-200 rounded-lg bg-white px-6">
+            <AccordionTrigger className="text-lg font-semibold text-gray-900 hover:no-underline">
+              ¿Qué integraciones están disponibles actualmente?
+            </AccordionTrigger>
+            <AccordionContent className="text-gray-600 leading-relaxed">
+              SyncScope se integra con las herramientas más populares de desarrollo:
+              <ul className="list-disc pl-6 mt-2 space-y-1">
+                <li><strong>Control de versiones:</strong> GitHub, GitLab</li>
+                <li><strong>Gestión de proyectos:</strong> Jira (próximamente)</li>
+                <li><strong>Comunicación:</strong> Slack, Microsoft Teams (próximamente)</li>
+                <li><strong>CI/CD:</strong> Jenkins, CircleCI (en desarrollo)</li>
+              </ul>
+              Estamos constantemente agregando nuevas integraciones basadas en las solicitudes de nuestros usuarios.
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="item-4" className="border border-gray-200 rounded-lg bg-white px-6">
+            <AccordionTrigger className="text-lg font-semibold text-gray-900 hover:no-underline">
+              ¿Cómo protegen la privacidad y los datos de mi equipo?
+            </AccordionTrigger>
+            <AccordionContent className="text-gray-600 leading-relaxed">
+              La privacidad es nuestra prioridad máxima:
+              <ul className="list-disc pl-6 mt-2 space-y-1">
+                <li>Solo recopilamos métricas de desarrollo necesarias (commits, tiempo de sesión, etc.)</li>
+                <li>No monitoreamos contenido de código fuente ni mensajes privados</li>
+                <li>Los datos son propiedad exclusiva de tu empresa</li>
+                <li>Puedes exportar o eliminar todos tus datos en cualquier momento</li>
+                <li>Cumplimos con GDPR, CCPA y otras regulaciones de privacidad</li>
+              </ul>
+              Transparencia total: puedes revisar exactamente qué datos recopilamos en nuestra política de privacidad.
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="item-5" className="border border-gray-200 rounded-lg bg-white px-6">
+            <AccordionTrigger className="text-lg font-semibold text-gray-900 hover:no-underline">
+              ¿Tienen soporte técnico disponible?
+            </AccordionTrigger>
+            <AccordionContent className="text-gray-600 leading-relaxed">
+              Ofrecemos diferentes niveles de soporte según tu plan:
+              <ul className="list-disc pl-6 mt-2 space-y-1">
+                <li><strong>Plan Starter:</strong> Soporte por email con respuesta en 24-48 horas</li>
+                <li><strong>Plan Growth:</strong> Soporte prioritario por email y chat en horario laboral</li>
+                <li><strong>Plan Enterprise:</strong> Soporte premium 24/7, onboarding asistido, y gestor de cuenta dedicado</li>
+              </ul>
+              Además, todos los planes incluyen acceso a nuestra base de conocimientos, tutoriales en video y documentación completa.
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </section>
 
       {/* Key Features Section */}

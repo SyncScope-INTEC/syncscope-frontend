@@ -13,6 +13,8 @@ import { authService } from "@/lib/services/authService"
 import { analyticsService } from "@/lib/services/analyticsService"
 import { monitoringService } from "@/lib/services/monitoringService"
 import { toast } from "sonner"
+import { TableSkeleton } from "@/components/skeletons/table-skeleton"
+import { CardSkeleton } from "@/components/skeletons/card-skeleton"
 
 export default function ReportsPage() {
   const { user } = useAppSelector((state) => state.auth)
@@ -123,9 +125,21 @@ export default function ReportsPage() {
     return (
       <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-50 to-white">
         <AppHeader />
-        <main className="flex-1 max-w-7xl mx-auto px-6 py-8">
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+        <main className="flex-1 max-w-7xl mx-auto px-6 py-8 w-full">
+          <div className="mb-8">
+            <div className="h-9 bg-gray-200 rounded w-64 mb-2 animate-pulse"></div>
+            <div className="h-6 bg-gray-200 rounded w-32 animate-pulse"></div>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
+            <CardSkeleton variant="tall" />
+            <CardSkeleton variant="tall" />
+            <CardSkeleton variant="tall" />
+          </div>
+
+          <div className="mb-12">
+            <div className="h-8 bg-gray-200 rounded w-48 mb-6 animate-pulse"></div>
+            <TableSkeleton rows={5} columns={3} />
           </div>
         </main>
         <Footer />

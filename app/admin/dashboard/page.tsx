@@ -14,6 +14,7 @@ import { authService } from "@/lib/services/authService"
 import { managementService } from "@/lib/services/managementService"
 import { useRouter } from "next/navigation"
 import { isDevMode, getCurrentYears } from "@/lib/utils/devMode"
+import { DashboardSkeleton } from "@/components/skeletons/dashboard-skeleton"
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -123,14 +124,10 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {isLoading && (
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Employees Section */}
+          {isLoading ? (
+            <DashboardSkeleton />
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <Card className="border-2 border-brand-light">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -367,6 +364,7 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
           </div>
+          )}
         </main>
       </div>
     </>

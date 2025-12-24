@@ -1,9 +1,8 @@
-"use client"
-
 import { useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import { EmptyState } from "@/components/ui/empty-state"
+import { TableSkeleton } from "@/components/skeletons/table-skeleton"
 
 interface Alert {
   id: string
@@ -34,7 +33,7 @@ export function AlertsTable({ alerts = [], isLoading = false }: AlertsTableProps
   }
 
   if (isLoading) {
-    return <div className="text-center py-8 text-gray-500">Cargando alertas...</div>
+    return <TableSkeleton rows={5} columns={4} />
   }
 
   if (alerts.length === 0) {
