@@ -117,13 +117,14 @@ export default function AdminProfilePage() {
     }
   }, [user])
 
-  const handleSaveProfile = async (data: { email: string; phone: string; timezone: string; image?: File }) => {
+  const handleSaveProfile = async (data: { firstName: string; lastName: string; phone: string; timezone: string; image?: File }) => {
     try {
       // Actualizar perfil en el backend
       await authService.updateProfile({
+        first_name: data.firstName,
+        last_name: data.lastName,
         timezone: data.timezone,
-        // Note: email y phone no están en el endpoint de updateProfile según la API
-        // Solo se puede actualizar first_name, last_name, timezone
+        phone_number: data.phone,
       })
 
       // Si hay imagen, subirla
@@ -132,19 +133,37 @@ export default function AdminProfilePage() {
         toast.success('Imagen de perfil actualizada')
       }
 
-      setProfile({ ...profile, ...data })
       toast.success('Perfil actualizado exitosamente')
 
-      // Recargar perfil para obtener nueva imagen con cache busting
+      // Recargar perfil completo desde el backend
       const updatedProfile = await authService.getProfile()
-      setProfile((prev: any) => ({
-        ...prev,
-        profileImage: updatedProfile.profile_image_path ? `${updatedProfile.profile_image_path}?t=${Date.now()}` : '',
-        timezone: updatedProfile.timezone,
-      }))
+      
+      // Construir URL completa de imagen de perfil
+      let profileImageUrl = ''
+      if (updatedProfile.profile_image_path) {
+        const AUTH_API_URL = process.env.NEXT_PUBLIC_AUTH_URL || 'http://localhost:8000'
+        profileImageUrl = `${AUTH_API_URL}/media/${updatedProfile.profile_image_path}?t=${Date.now()}`
+      }
+
+      setProfile({
+        firstName: updatedProfile.first_name || user?.first_name || 'Usuario',
+        lastName: updatedProfile.last_name || user?.last_name || '',
+        role: updatedProfile.role || user?.role || 'Usuario',
+        email: updatedProfile.email || user?.email || '',
+        phone: updatedProfile.phone_number || '',
+        identifier: updatedProfile.id || user?.id || '000000000',
+        company: updatedProfile.company?.name || user?.company?.name || 'Sin empresa',
+        gitHubUser: updatedProfile.github_username || '',
+        gitLabUser: updatedProfile.gitlab_username || '',
+        timezone: updatedProfile.timezone || '',
+        status: updatedProfile.is_active ? 'Activo' : 'Inactivo',
+        createdDate: '',
+        lastUpdated: '',
+        profileImage: profileImageUrl,
+      })
     } catch (error: any) {
       console.error('Error updating profile:', error)
-      toast.error('Error al actualizar el perfil')
+      toast.error(error.response?.data?.detail || 'Error al actualizar el perfil')
     }
   }
 
@@ -309,6 +328,8 @@ export default function AdminProfilePage() {
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
         profile={{
+          firstName: profile.firstName,
+          lastName: profile.lastName,
           email: profile.email,
           phone: profile.phone,
           timezone: profile.timezone,

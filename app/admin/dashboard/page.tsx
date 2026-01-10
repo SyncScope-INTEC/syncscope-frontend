@@ -15,6 +15,7 @@ import { managementService } from "@/lib/services/managementService"
 import { useRouter } from "next/navigation"
 import { isDevMode, getCurrentYears } from "@/lib/utils/devMode"
 import { DashboardSkeleton } from "@/components/skeletons/dashboard-skeleton"
+import { ProjectSelector } from "@/components/selectors/project-selector"
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -23,8 +24,11 @@ export default function AdminDashboard() {
   const [sessionStats, setSessionStats] = useState<any>(null)
   const [recentSessions, setRecentSessions] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [employees, setEmployees] = useState<any[]>([]) // Changed to useState for employees
-  const [projects, setProjects] = useState<any[]>([]) // Added this state
+  const [employees, setEmployees] = useState<any[]>([]) 
+  const [projects, setProjects] = useState<any[]>([])
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
+  const [teamMembers, setTeamMembers] = useState<any[]>([])
+  const [loadingTeamMembers, setLoadingTeamMembers] = useState(false)
 
   useEffect(() => {
     async function fetchDashboardData() {
@@ -43,9 +47,13 @@ export default function AdminDashboard() {
         setSessionStats(stats)
         setRecentSessions(sessions || [])
         // Handle projects response structure
-        console.log('Projects response:', userProjects)
-        console.log('Projects results:', userProjects?.results)
-        setProjects(userProjects?.results || [])
+        const projectsList = userProjects?.results || []
+        setProjects(projectsList)
+        
+        // Auto-select first project if available
+        if (projectsList.length > 0 && !selectedProjectId) {
+          setSelectedProjectId(projectsList[0].id)
+        }
 
         // Mapear usuarios supervisados a formato de empleados
         // FILTRAR por empresa del usuario actual (temporal hasta que backend lo haga)
@@ -94,6 +102,31 @@ export default function AdminDashboard() {
     }
   }, [user])
 
+  // Fetch team members when selected project changes
+  useEffect(() => {
+    async function fetchTeamMembers() {
+      if (!selectedProjectId) {
+        setTeamMembers([])
+        return
+      }
+
+      try {
+        setLoadingTeamMembers(true)
+        const members = await managementService.getAllTeamMembers({ 
+          project: selectedProjectId 
+        })
+        setTeamMembers(members?.results || [])
+      } catch (error) {
+        console.error('Error fetching team members:', error)
+        setTeamMembers([])
+      } finally {
+        setLoadingTeamMembers(false)
+      }
+    }
+
+    fetchTeamMembers()
+  }, [selectedProjectId])
+
 
 
   const updates = recentSessions.length > 0
@@ -134,7 +167,7 @@ export default function AdminDashboard() {
             <Card className="border-2 border-brand-light">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  Empleados
+                  Team Members
                   <Button
                     variant="ghost"
                     size="icon"
@@ -146,32 +179,36 @@ export default function AdminDashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {employees.map((employee, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    {employee.isCurrentUser ? (
-                      <div className="w-8 h-8 bg-brand rounded-full flex items-center justify-center text-brand-foreground font-semibold text-sm">
-                        {user?.first_name?.[0]?.toUpperCase() || 'U'}
+                {/* Project Selector */}
+                <ProjectSelector
+                  projects={projects}
+                  selectedProjectId={selectedProjectId}
+                  onSelectProject={setSelectedProjectId}
+                />
+
+                {/* Team Members List */}
+                {loadingTeamMembers ? (
+                  <div className="text-sm text-gray-500 text-center py-4">Cargando...</div>
+                ) : teamMembers.length > 0 ? (
+                  teamMembers.map((member, index) => (
+                    <div key={member.id || index} className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                        {member.user_name?.[0]?.toUpperCase() || 'U'}
                       </div>
-                    ) : (
-                      <div className="w-8 h-8 bg-gray-300 rounded-full overflow-hidden">
-                        <Image
-                          src="/placeholder.svg?key=admin"
-                          alt={employee.name}
-                          width={32}
-                          height={32}
-                          className="w-full h-full object-cover"
-                        />
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900 text-sm">{member.user_name}</p>
+                        <p className="text-xs text-gray-600">{member.role}</p>
                       </div>
-                    )}
-                    <div className="flex-1">
-                      <p className="font-medium text-gray-900 text-sm">{employee.name}</p>
-                      <p className="text-xs text-gray-600">{employee.role}</p>
+                      <Badge variant="secondary" className="text-xs text-purple-500">
+                        {member.team_name}
+                      </Badge>
                     </div>
-                    <Badge variant="secondary" className={`text-xs ${employee.color}`}>
-                      {employee.status}
-                    </Badge>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500 text-center py-4">
+                    {selectedProjectId ? 'No hay miembros en este proyecto' : 'Selecciona un proyecto'}
+                  </p>
+                )}
               </CardContent>
             </Card>
 

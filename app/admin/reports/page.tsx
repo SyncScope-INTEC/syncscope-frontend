@@ -16,6 +16,7 @@ import { managementService } from "@/lib/services/managementService"
 import { toast } from "sonner"
 import { TableSkeleton } from "@/components/skeletons/table-skeleton"
 import { CardSkeleton } from "@/components/skeletons/card-skeleton"
+import { ProjectSelector } from "@/components/selectors/project-selector"
 
 export default function ReportsPage() {
   const { user } = useAppSelector((state) => state.auth)
@@ -26,6 +27,9 @@ export default function ReportsPage() {
   const [team, setTeam] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [projects, setProjects] = useState<any[]>([])
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
+  const [teamMembers, setTeamMembers] = useState<any[]>([])
+  const [loadingTeamMembers, setLoadingTeamMembers] = useState(false)
 
   useEffect(() => {
     async function fetchData() {
@@ -56,7 +60,13 @@ export default function ReportsPage() {
 
         setDashboardData(dashboard)
         setSessionStats(stats)
-        setProjects(userProjects?.results || [])
+        const projectsList = userProjects?.results || []
+        setProjects(projectsList)
+        
+        // Auto-select first project if available
+        if (projectsList.length > 0 && !selectedProjectId) {
+          setSelectedProjectId(projectsList[0].id)
+        }
 
         // Mapear usuarios supervisados a formato de equipo
         // FILTRAR por empresa del usuario actual (temporal hasta que backend lo haga)
@@ -124,6 +134,31 @@ export default function ReportsPage() {
       fetchData()
     }
   }, [user])
+
+  // Fetch team members when selected project changes
+  useEffect(() => {
+    async function fetchTeamMembers() {
+      if (!selectedProjectId) {
+        setTeamMembers([])
+        return
+      }
+
+      try {
+        setLoadingTeamMembers(true)
+        const members = await managementService.getAllTeamMembers({ 
+          project: selectedProjectId 
+        })
+        setTeamMembers(members?.results || [])
+      } catch (error) {
+        console.error('Error fetching team members:', error)
+        setTeamMembers([])
+      } finally {
+        setLoadingTeamMembers(false)
+      }
+    }
+
+    fetchTeamMembers()
+  }, [selectedProjectId])
 
   if (isLoading) {
     return (
@@ -326,8 +361,25 @@ export default function ReportsPage() {
 
         {/* Team Section */}
         <div className="mb-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Equipo de trabajo</h2>
-          <TeamMembersTable members={team} isLoading={false} />
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-900">Equipo de trabajo</h2>
+            <div className="w-64">
+              <ProjectSelector
+                projects={projects}
+                selectedProjectId={selectedProjectId}
+                onSelectProject={setSelectedProjectId}
+              />
+            </div>
+          </div>
+          <TeamMembersTable 
+            members={teamMembers.map(member => ({
+              id: member.id,
+              name: member.user_name,
+              role: member.role,
+              lastActivity: 'Activo',
+            }))} 
+            isLoading={loadingTeamMembers} 
+          />
         </div>
       </main>
 

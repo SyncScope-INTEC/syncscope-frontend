@@ -44,7 +44,7 @@ export const authService = {
     return response.data
   },
 
-  updateProfile: async (data: { first_name?: string; last_name?: string; timezone?: string }) => {
+  updateProfile: async (data: { first_name?: string; last_name?: string; timezone?: string; phone_number?: string }) => {
     const response = await api.put('/profile/', data)
     return response.data
   },

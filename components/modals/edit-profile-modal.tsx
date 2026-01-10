@@ -13,17 +13,20 @@ interface EditProfileModalProps {
   isOpen: boolean
   onClose: () => void
   profile: {
+    firstName: string
+    lastName: string
     email: string
     phone: string
     timezone: string
     profile_image_path?: string
   }
-  onSave: (data: { email: string; phone: string; timezone: string; image?: File }) => void
+  onSave: (data: { firstName: string; lastName: string; phone: string; timezone: string; image?: File }) => void
 }
 
 export function EditProfileModal({ isOpen, onClose, profile, onSave }: EditProfileModalProps) {
   const [formData, setFormData] = useState({
-    email: profile.email,
+    firstName: profile.firstName,
+    lastName: profile.lastName,
     phone: profile.phone,
     timezone: profile.timezone,
   })
@@ -120,15 +123,40 @@ export function EditProfileModal({ isOpen, onClose, profile, onSave }: EditProfi
             </div>
           </div>
 
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="firstName">Nombre</Label>
+              <Input
+                id="firstName"
+                type="text"
+                value={formData.firstName}
+                onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="lastName">Apellido</Label>
+              <Input
+                id="lastName"
+                type="text"
+                value={formData.lastName}
+                onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                required
+              />
+            </div>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="email">Correo electrónico</Label>
             <Input
               id="email"
               type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              required
+              value={profile.email}
+              disabled
+              className="bg-gray-100 cursor-not-allowed"
             />
+            <p className="text-xs text-gray-500">El email no puede ser modificado</p>
           </div>
 
           <div className="space-y-2">
@@ -138,7 +166,6 @@ export function EditProfileModal({ isOpen, onClose, profile, onSave }: EditProfi
               type="tel"
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              required
               placeholder="+1 (555) 123-4567"
             />
           </div>
