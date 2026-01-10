@@ -94,7 +94,17 @@ export const authService = {
 
   handleGitHubCallback: async (code: string, state: string) => {
     const response = await api.get(`/github/callback/?code=${code}&state=${state}`)
-    return response.data
+    
+    // Transform response to match Redux expectations
+    // Backend returns tokens in a nested object: { tokens: { access: "...", refresh: "..." } }
+    return {
+      user: response.data.user,
+      access: response.data.tokens.access,
+      refresh: response.data.tokens.refresh,
+      session_token: response.data.session_token,
+      message: response.data.message,
+      invitation_accepted: response.data.invitation_accepted,
+    }
   },
 
   // Session Management
@@ -152,6 +162,26 @@ export const authService = {
       new_password: newPassword,
       new_password_confirm: newPasswordConfirm,
     })
+    return response.data
+  },
+
+  // Account Setup (after Stripe payment)
+  setupAccount: async (data: {
+    email: string
+    first_name: string
+    last_name: string
+    plan: string
+  }) => {
+    const response = await api.post('/setup-account/', data)
+    return response.data
+  },
+
+  changeInitialPassword: async (data: {
+    temp_password: string
+    new_password: string
+    new_password_confirm: string
+  }) => {
+    const response = await api.post('/change-initial-password/', data)
     return response.data
   },
 }

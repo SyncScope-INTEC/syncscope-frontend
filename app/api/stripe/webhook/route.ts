@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { stripe, STRIPE_CONFIG } from '@/lib/stripe/config'
-import { generateSecurePassword, getCustomFieldValue, sendWelcomeEmail } from '@/lib/stripe/utils'
+import { getCustomFieldValue } from '@/lib/stripe/utils'
 import Stripe from 'stripe'
 
 export async function POST(req: NextRequest) {
@@ -70,40 +70,30 @@ export async function POST(req: NextRequest) {
         console.log('Could not verify user existence, proceeding with registration')
       }
 
-      // Generar password temporal
-      const tempPassword = generateSecurePassword()
-
-      // Crear usuario en el backend
+      // Crear usuario con setup-account (genera password temporal y envía email)
       try {
-        const registerResponse = await fetch(`${authUrl}/auth/register/`, {
+        const setupResponse = await fetch(`${authUrl}/auth/setup-account/`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             email,
             first_name: firstName,
             last_name: lastName,
-            phone_number: phone,
-            password: tempPassword,
-            password_confirm: tempPassword,
-            company_name: companyName,
-            role,
             plan,
           }),
         })
 
-        if (!registerResponse.ok) {
-          const errorData = await registerResponse.json()
-          console.error('Failed to register user via webhook:', errorData)
+        if (!setupResponse.ok) {
+          const errorData = await setupResponse.json()
+          console.error('Failed to setup account via webhook:', errorData)
           // No retornar error para que Stripe no reintente
           return NextResponse.json({ received: true })
         }
 
-        // Enviar email de bienvenida
-        await sendWelcomeEmail(email, tempPassword, `${firstName} ${lastName}`)
-
-        console.log(`✅ User ${email} registered successfully via webhook`)
+        const setupData = await setupResponse.json()
+        console.log(`✅ User ${email} account setup successfully via webhook. User ID: ${setupData.user_id}`)
       } catch (error: any) {
-        console.error('Error registering user via webhook:', error.message)
+        console.error('Error setting up account via webhook:', error.message)
       }
     }
 

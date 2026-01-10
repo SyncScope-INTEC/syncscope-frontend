@@ -75,8 +75,19 @@ export default function AdminLogin() {
       }
 
       await dispatch(login({ email: formData.email, password: formData.password })).unwrap()
-      toast.success("¡Bienvenido!")
-      router.push("/admin/dashboard")
+      
+      // Check if user needs to change temporary password
+      const pendingPasswordChange = localStorage.getItem('pending_password_change')
+      
+      if (pendingPasswordChange === formData.email) {
+        // User has temporary password, redirect to change password page
+        toast.info("Por favor cambia tu contraseña temporal")
+        router.push(`/auth/change-initial-password?email=${encodeURIComponent(formData.email)}`)
+      } else {
+        // Normal login flow
+        toast.success("¡Bienvenido!")
+        router.push("/admin/dashboard")
+      }
     } catch (_err) {
       // El error ya se maneja en el useEffect
     }

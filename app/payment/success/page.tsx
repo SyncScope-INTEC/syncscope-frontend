@@ -12,6 +12,7 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { CheckCircle, Loader2 } from "lucide-react"
 import { toast } from "sonner"
+import { authService } from "@/lib/services/authService"
 import { useAppDispatch } from "@/lib/store/hooks"
 import { login } from "@/lib/store/slices/authSlice"
 
@@ -28,11 +29,8 @@ export default function PaymentSuccessPage() {
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
-    company_name: '',
-    role: 'developer',
+    role: 'admin',
     timezone: 'America/Bogota',
-    password: '',
-    password_confirm: '',
   })
 
   const [creating, setCreating] = useState(false)
@@ -91,66 +89,35 @@ export default function PaymentSuccessPage() {
   const handleCreateAccount = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!formData.first_name || !formData.last_name || !formData.company_name || !formData.password || !formData.password_confirm) {
+    if (!formData.first_name || !formData.last_name) {
       toast.error('Por favor completa todos los campos')
-      return
-    }
-
-    if (formData.password !== formData.password_confirm) {
-      toast.error('Las contraseñas no coinciden')
-      return
-    }
-
-    if (formData.password.length < 8) {
-      toast.error('La contraseña debe tener al menos 8 caracteres')
       return
     }
 
     setCreating(true)
 
     try {
-      // Crear usuario en el backend
-      const authUrl = process.env.NEXT_PUBLIC_AUTH_URL
-      const registerResponse = await fetch(`${authUrl}/auth/register/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: customerData.email,
-          first_name: formData.first_name,
-          last_name: formData.last_name,
-          phone_number: customerData.phone || '',
-          password: formData.password,
-          password_confirm: formData.password_confirm,
-          company_name: formData.company_name,
-          role: formData.role,
-          plan: plan,
-        }),
+      // Crear usuario con setup-account (backend genera password temporal y envía email)
+      const response = await authService.setupAccount({
+        email: customerData.email,
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        plan: plan,
       })
 
-      if (!registerResponse.ok) {
-        const errorData = await registerResponse.json()
-        throw new Error(errorData.message || 'Error al crear la cuenta')
-      }
+      // Guardar email en localStorage para detectar que necesita cambiar contraseña
+      localStorage.setItem('pending_password_change', customerData.email)
 
       toast.success('¡Cuenta creada exitosamente!')
+      toast.info('Revisa tu correo para obtener tu contraseña temporal')
 
-      // Login automático
-      try {
-        await dispatch(login({
-          email: customerData.email,
-          password: formData.password,
-        })).unwrap()
-
-        // Redirigir al dashboard
-        router.push('/admin/dashboard')
-      } catch (loginError) {
-        // Si falla el login automático, redirigir a login manual
-        toast.info('Por favor inicia sesión con tus credenciales')
+      // Redirigir a login después de 2 segundos
+      setTimeout(() => {
         router.push('/auth/admin-login')
-      }
+      }, 2000)
     } catch (error: any) {
       console.error('Error creating account:', error)
-      toast.error(error.message || 'Error al crear la cuenta')
+      toast.error(error.response?.data?.error || 'Error al crear la cuenta')
     } finally {
       setCreating(false)
     }
@@ -188,10 +155,13 @@ export default function PaymentSuccessPage() {
           <Card className="p-8 border-2 border-purple-200 bg-white/80 backdrop-blur">
             <div className="mb-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Completa tu registro
+                Configura tu cuenta
               </h2>
-              <p className="text-gray-600">
+              <p className="text-gray-600 mb-1">
                 Email: <span className="font-semibold">{customerData?.email}</span>
+              </p>
+              <p className="text-sm text-gray-500">
+                Recibirás una contraseña temporal por correo electrónico
               </p>
             </div>
 
@@ -230,21 +200,7 @@ export default function PaymentSuccessPage() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="company_name" className="text-gray-900 font-medium">
-                  Nombre de la empresa
-                </Label>
-                <Input
-                  id="company_name"
-                  type="text"
-                  placeholder="Mi Empresa S.A."
-                  value={formData.company_name}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border-2 border-purple-200 rounded-lg focus:border-purple-400 focus:ring-0"
-                  disabled={creating}
-                  required
-                />
-              </div>
+
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
@@ -275,40 +231,7 @@ export default function PaymentSuccessPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="password" className="text-gray-900 font-medium">
-                    Contraseña
-                  </Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={formData.password}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border-2 border-purple-200 rounded-lg focus:border-purple-400 focus:ring-0"
-                    disabled={creating}
-                    required
-                  />
-                  <p className="text-sm text-gray-500">Mínimo 8 caracteres</p>
-                </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="password_confirm" className="text-gray-900 font-medium">
-                    Confirmar contraseña
-                  </Label>
-                  <Input
-                    id="password_confirm"
-                    type="password"
-                    placeholder="••••••••"
-                    value={formData.password_confirm}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border-2 border-purple-200 rounded-lg focus:border-purple-400 focus:ring-0"
-                    disabled={creating}
-                    required
-                  />
-                </div>
-              </div>
 
               <Button
                 type="submit"
@@ -330,7 +253,8 @@ export default function PaymentSuccessPage() {
           {/* Info Box */}
           <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <p className="text-sm text-blue-800">
-              <strong>Nota:</strong> Si cierras esta ventana, recibirás un email con una contraseña temporal para acceder a tu cuenta.
+              <strong>Importante:</strong> Después de completar el registro, recibirás un correo con tu contraseña temporal. 
+              Úsala para iniciar sesión y luego podrás cambiarla por una permanente.
             </p>
           </div>
         </div>
