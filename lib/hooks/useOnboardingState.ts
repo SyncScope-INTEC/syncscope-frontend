@@ -35,7 +35,11 @@ export const useOnboardingState = () => {
         // Admin - check if company has projects
         if (isAdmin(user.role)) {
           try {
-            const projects = await managementService.getAllProjects()
+            // Filter projects by company
+            const companyId = user.company?.id
+            const projects = await managementService.getAllProjects({ 
+              company: companyId 
+            })
             const hasProjects = projects?.results?.length > 0
             const projectCount = projects?.results?.length || 0
 
@@ -63,8 +67,8 @@ export const useOnboardingState = () => {
         if (isSupervisor(user.role)) {
           try {
             const userProjects = await managementService.getUserProjects(user.id)
-            const hasProjects = userProjects?.length > 0
-            const projectCount = userProjects?.length || 0
+            const hasProjects = userProjects?.results?.length > 0
+            const projectCount = userProjects?.results?.length || 0
 
             // Optionally check for supervised users
             let hasSupervisedUsers = false

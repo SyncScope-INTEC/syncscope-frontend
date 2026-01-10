@@ -3,10 +3,18 @@
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
-import { UserCheck, Clock, CheckCircle2 } from 'lucide-react'
+import { UserCheck, Clock, CheckCircle2, LogOut } from 'lucide-react'
+import { useAppDispatch } from '@/lib/store/hooks'
+import { logout } from '@/lib/store/slices/authSlice'
 
 export function SupervisorOnboarding() {
   const router = useRouter()
+  const dispatch = useAppDispatch()
+
+  const handleLogout = () => {
+    dispatch(logout())
+    router.push('/auth/admin-login')
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-purple-50 via-blue-50 to-purple-50 p-4">
@@ -88,6 +96,14 @@ export function SupervisorOnboarding() {
             className="flex-1 bg-purple-600 hover:bg-purple-700"
           >
             Ir al Dashboard
+          </Button>
+          <Button
+            onClick={handleLogout}
+            variant="outline"
+            className="flex items-center gap-2 border-red-300 text-red-600 hover:bg-red-50"
+          >
+            <LogOut className="w-4 h-4" />
+            Cerrar Sesión
           </Button>
         </div>
       </Card>

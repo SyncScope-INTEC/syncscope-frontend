@@ -36,13 +36,16 @@ export default function AdminDashboard() {
           monitoringService.getUserSessionStats(user?.id || '').catch(() => null),
           monitoringService.getUserSessions(user?.id || '', { limit: 3 }).catch(() => []),
           authService.getSupervisedUsers().catch(() => []),
-          managementService.getUserProjects(user?.id || '').catch(() => []), // Added this line
+          managementService.getUserProjects(user?.id || '').catch(() => ({ results: [] })), // Added this line
         ])
 
         setDashboardData(dashboard)
         setSessionStats(stats)
         setRecentSessions(sessions || [])
-        setProjects(userProjects || []) // Added this line
+        // Handle projects response structure
+        console.log('Projects response:', userProjects)
+        console.log('Projects results:', userProjects?.results)
+        setProjects(userProjects?.results || [])
 
         // Mapear usuarios supervisados a formato de empleados
         // FILTRAR por empresa del usuario actual (temporal hasta que backend lo haga)
@@ -204,7 +207,7 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                   <p className="text-center text-sm text-gray-600">
-                    {dashboardData?.current_project?.name || 'Proyecto 002'}
+                    {projects.length > 0 ? projects[0].name : 'Sin proyectos'}
                   </p>
                 </CardContent>
               </Card>
@@ -244,25 +247,31 @@ export default function AdminDashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-blue-500 rounded"></div>
-                    <div>
-                      <p className="font-medium text-gray-900 text-sm">
-                        {dashboardData?.current_project?.name || 'Proyecto 002'}
-                      </p>
-                      <p className="text-xs text-gray-600">
-                        {new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}
-                      </p>
-                    </div>
-                  </div>
-                  {isDevMode() && (
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-indigo-600 rounded"></div>
-                      <div>
-                        <p className="font-medium text-gray-900 text-sm">Proyecto 003</p>
-                        <p className="text-xs text-gray-600">19, Julio, 2025</p>
+                  {projects.length > 0 ? (
+                    projects.map((project, index) => (
+                      <div key={project.id} className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded ${
+                          index === 0 ? 'bg-gradient-to-br from-purple-400 to-blue-500' :
+                          index === 1 ? 'bg-gradient-to-br from-purple-600 to-indigo-600' :
+                          'bg-gradient-to-br from-indigo-500 to-purple-500'
+                        }`}></div>
+                        <div>
+                          <p className="font-medium text-gray-900 text-sm">
+                            {project.name}
+                          </p>
+                          <p className="text-xs text-gray-600">
+                            {project.created_at 
+                              ? new Date(project.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })
+                              : new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })
+                            }
+                          </p>
+                        </div>
                       </div>
-                    </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-gray-500 text-center py-4">
+                      No hay proyectos asignados
+                    </p>
                   )}
                 </CardContent>
               </Card>

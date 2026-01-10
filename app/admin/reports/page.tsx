@@ -12,6 +12,7 @@ import { useAppSelector } from "@/lib/store/hooks"
 import { authService } from "@/lib/services/authService"
 import { analyticsService } from "@/lib/services/analyticsService"
 import { monitoringService } from "@/lib/services/monitoringService"
+import { managementService } from "@/lib/services/managementService"
 import { toast } from "sonner"
 import { TableSkeleton } from "@/components/skeletons/table-skeleton"
 import { CardSkeleton } from "@/components/skeletons/card-skeleton"
@@ -24,6 +25,7 @@ export default function ReportsPage() {
   const [sessionStats, setSessionStats] = useState<any>(null)
   const [team, setTeam] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [projects, setProjects] = useState<any[]>([])
 
   useEffect(() => {
     async function fetchData() {
@@ -31,11 +33,12 @@ export default function ReportsPage() {
         setIsLoading(true)
 
         // Obtener datos en paralelo
-        const [profileDataResponse, dashboard, stats, supervisedUsers] = await Promise.all([
+        const [profileDataResponse, dashboard, stats, supervisedUsers, userProjects] = await Promise.all([
           authService.getProfile().catch(() => null),
           analyticsService.getDashboard().catch(() => null),
           monitoringService.getUserSessionStats(user?.id || '').catch(() => null),
           authService.getSupervisedUsers().catch(() => []),
+          managementService.getUserProjects(user?.id || '').catch(() => ({ results: [] })),
         ])
 
         setProfileData(profileDataResponse)
@@ -53,6 +56,7 @@ export default function ReportsPage() {
 
         setDashboardData(dashboard)
         setSessionStats(stats)
+        setProjects(userProjects?.results || [])
 
         // Mapear usuarios supervisados a formato de equipo
         // FILTRAR por empresa del usuario actual (temporal hasta que backend lo haga)
@@ -238,14 +242,21 @@ export default function ReportsPage() {
               <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-blue-500 rounded"></div>
               <div>
                 <h3 className="font-semibold text-gray-900">
-                  {dashboardData?.current_project?.name || 'Proyecto 002'}
+                  {projects.length > 0 ? projects[0].name : 'Sin proyecto'}
                 </h3>
                 <p className="text-xs text-gray-500">
-                  {new Date().toLocaleDateString('es-ES', {
-                    day: '2-digit',
-                    month: 'long',
-                    year: 'numeric',
-                  })}
+                  {projects.length > 0 && projects[0].created_at
+                    ? new Date(projects[0].created_at).toLocaleDateString('es-ES', {
+                      day: '2-digit',
+                      month: 'long',
+                      year: 'numeric',
+                    })
+                    : new Date().toLocaleDateString('es-ES', {
+                      day: '2-digit',
+                      month: 'long',
+                      year: 'numeric',
+                    })
+                  }
                 </p>
               </div>
             </div>
