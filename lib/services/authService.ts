@@ -77,8 +77,9 @@ export const authService = {
   },
 
   // GitHub OAuth
-  getGitHubAuthUrl: async () => {
-    const response = await api.get('/github/url/')
+  getGitHubAuthUrl: async (redirectUri?: string) => {
+    const params = redirectUri ? { redirect_uri: redirectUri } : {}
+    const response = await api.get('/github/url/', { params })
     return response.data
   },
 

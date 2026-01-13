@@ -98,11 +98,12 @@ export default function AdminLogin() {
       setGithubLoading(true)
 
       // Obtener URL de autenticación de GitHub
-      const response = await authService.getGitHubAuthUrl()
+      const response = await authService.getGitHubAuthUrl(`${window.location.origin}/auth/github/callback`)
+      console.log("GitHub OAuth response:", response)
 
-      if (response?.auth_url) {
+      if (response?.oauth_url) {
         // Redirigir a GitHub OAuth
-        window.location.href = response.auth_url
+        window.location.href = response.oauth_url
       } else {
         toast.error("Error al obtener URL de GitHub")
       }
