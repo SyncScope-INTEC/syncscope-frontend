@@ -95,7 +95,7 @@ export const authService = {
 
   handleGitHubCallback: async (code: string, state: string) => {
     const response = await api.get(`/github/callback/?code=${code}&state=${state}`)
-    
+
     // Transform response to match Redux expectations
     // Backend returns tokens in a nested object: { tokens: { access: "...", refresh: "..." } }
     return {
@@ -106,6 +106,11 @@ export const authService = {
       message: response.data.message,
       invitation_accepted: response.data.invitation_accepted,
     }
+  },
+
+  getWebOAuthTokens: async (tokenKey: string) => {
+    const response = await api.get(`/github/tokens/${tokenKey}/`)
+    return response.data
   },
 
   // Session Management

@@ -15,10 +15,9 @@ export default function GitHubCallbackPage() {
 
   useEffect(() => {
     async function handleCallback() {
-      const code = searchParams?.get('code')
-      const state = searchParams?.get('state')
+      const tokenKey = searchParams?.get('token_key')
 
-      if (!code || !state) {
+      if (!tokenKey) {
         setStatus('error')
         toast.error("Faltan parámetros de autenticación")
         setTimeout(() => router.push('/auth/admin-login'), 2000)
@@ -26,13 +25,14 @@ export default function GitHubCallbackPage() {
       }
 
       try {
-        const response = await authService.handleGitHubCallback(code, state)
-        
+        // Retrieve tokens from backend using token_key
+        const response = await authService.getWebOAuthTokens(tokenKey)
+
         // Guardar credenciales en Redux
         dispatch(setCredentials({
           user: response.user,
-          accessToken: response.access,
-          refreshToken: response.refresh,
+          accessToken: response.tokens.access,
+          refreshToken: response.tokens.refresh,
           sessionToken: response.session_token,
         }))
 
