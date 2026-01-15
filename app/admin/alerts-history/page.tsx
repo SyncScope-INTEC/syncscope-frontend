@@ -41,7 +41,7 @@ export default function AlertsHistoryPage() {
           id: alert.id,
           title: alert.title,
           employee: alert.user_name || `${user?.first_name || 'Usuario'} ${user?.last_name || ''}`,
-          date: new Date(alert.timestamp || alert.created_at).toLocaleDateString('es-ES', {
+          date: new Date(alert.triggered_at || alert.acknowledged_at || new Date()).toLocaleDateString('es-ES', {
             day: '2-digit',
             month: 'long',
             year: 'numeric',
