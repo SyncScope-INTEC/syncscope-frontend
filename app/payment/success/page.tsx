@@ -29,8 +29,10 @@ export default function PaymentSuccessPage() {
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
-    role: 'admin',
-    timezone: 'America/Bogota',
+    phone_number: '',
+    company_name: '',
+    password: '',
+    password_confirm: '',
   })
 
   const [creating, setCreating] = useState(false)
@@ -78,43 +80,46 @@ export default function PaymentSuccessPage() {
     })
   }
 
-  const handleRoleChange = (value: string) => {
-    setFormData({ ...formData, role: value })
-  }
-
-  const handleTimezoneChange = (value: string) => {
-    setFormData({ ...formData, timezone: value })
-  }
-
   const handleCreateAccount = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!formData.first_name || !formData.last_name) {
+    if (!formData.first_name || !formData.last_name || !formData.company_name || !formData.phone_number || !formData.password || !formData.password_confirm) {
       toast.error('Por favor completa todos los campos')
+      return
+    }
+
+    if (formData.password !== formData.password_confirm) {
+      toast.error('Las contraseñas no coinciden')
+      return
+    }
+
+    if (formData.password.length < 8) {
+      toast.error('La contraseña debe tener al menos 8 caracteres')
       return
     }
 
     setCreating(true)
 
     try {
-      // Crear usuario con setup-account (backend genera password temporal y envía email)
-      const response = await authService.setupAccount({
+      // Registrar usuario completo con /auth/register/
+      const response = await authService.register({
         email: customerData.email,
         first_name: formData.first_name,
         last_name: formData.last_name,
+        phone_number: formData.phone_number,
+        password: formData.password,
+        password_confirm: formData.password_confirm,
+        company_name: formData.company_name,
+        role: 'admin', // Siempre admin para quien paga
         plan: plan,
       })
 
-      // Guardar email en localStorage para detectar que necesita cambiar contraseña
-      localStorage.setItem('pending_password_change', customerData.email)
-
       toast.success('¡Cuenta creada exitosamente!')
-      toast.info('Revisa tu correo para obtener tu contraseña temporal')
 
-      // Redirigir a login después de 2 segundos
+      // Redirigir a login
       setTimeout(() => {
         router.push('/auth/admin-login')
-      }, 2000)
+      }, 1500)
     } catch (error: any) {
       console.error('Error creating account:', error)
       toast.error(error.response?.data?.error || 'Error al crear la cuenta')
