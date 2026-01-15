@@ -185,7 +185,6 @@ export const authService = {
     const response = await api.post('/change-initial-password/', data)
     return response.data
   },
-  // Invitations
   sendInvitation: async (data: { invitee_email: string; role: 'supervisor' | 'developer' }) => {
     const response = await api.post('/invitations/', data)
     return response.data
