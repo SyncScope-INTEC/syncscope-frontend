@@ -118,42 +118,32 @@ export default function AlertsHistoryPage() {
 
   const handleExportPDF = async () => {
     try {
-      toast.info('Generando reporte...')
-
-      // Crear reporte
-      const report = await analyticsService.createReport({
-        name: `Alertas - ${new Date().toLocaleDateString('es-ES')}`,
-        type: reportType,
-        config: { alerts: filteredAlerts.length },
-      })
-
-      console.log('Report created:', report)
-
-      if (!report || !report.id) {
-        toast.error('Error: No se pudo crear el reporte')
+      if (filteredAlerts.length === 0) {
+        toast.error('No hay alertas para exportar')
         return
       }
 
-      // Exportar a PDF con datos de alertas
-      const exported = await analyticsService.exportReport(
-        report.id,
-        'pdf',
-        true,
-        true,
-        {
-          alerts: filteredAlerts,
-          reportName: `Alertas - ${new Date().toLocaleDateString('es-ES')}`,
-          reportType: reportType,
-          generatedAt: new Date().toISOString()
-        }
-      )
+      toast.info('Generando reporte PDF...')
 
-      if (exported?.url) {
-        window.open(exported.url, '_blank')
-        toast.success('Reporte generado exitosamente')
-      } else {
-        toast.success('Reporte creado (descarga no disponible)')
+      // Generar PDF directamente con los datos de la tabla
+      const reportData = {
+        alerts: filteredAlerts,
+        reportName: `Alertas - ${new Date().toLocaleDateString('es-ES')}`,
+        reportType: reportType,
+        generatedAt: new Date().toISOString(),
+        totalAlerts: filteredAlerts.length,
+        highPriorityAlerts: filteredAlerts.filter(a => a.severity === 'alto').length,
+        mediumPriorityAlerts: filteredAlerts.filter(a => a.severity === 'medio').length,
+        lowPriorityAlerts: filteredAlerts.filter(a => a.severity === 'bajo').length,
       }
+
+      // Usar el endpoint local de generación de PDF
+      const dataParam = encodeURIComponent(JSON.stringify(reportData))
+      const pdfUrl = `/api/generate-report-pdf?data=${dataParam}`
+      
+      // Abrir en nueva pestaña
+      window.open(pdfUrl, '_blank')
+      toast.success('Reporte generado exitosamente')
     } catch (error: any) {
       console.error('Error exporting PDF:', error)
       toast.error(`Error al generar reporte: ${error.message || 'Error desconocido'}`)
