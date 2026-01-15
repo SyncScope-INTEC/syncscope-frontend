@@ -19,6 +19,7 @@ import { ProjectSelector } from "@/components/selectors/project-selector"
 import { useDashboardMetrics } from "@/lib/hooks/useDashboardMetrics"
 import { formatDuration } from "@/lib/utils/metrics"
 import { MetricCards } from "@/components/dashboard/metric-cards"
+import { calculateProjectProgress } from "@/lib/utils/projectProgress"
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -34,7 +35,11 @@ export default function AdminDashboard() {
   const [loadingTeamMembers, setLoadingTeamMembers] = useState(false)
 
   // Fetch real metrics for selected project
+
   const metrics = useDashboardMetrics(selectedProjectId)
+
+  // Calculate project progress using shared utility
+  const projectProgress = calculateProjectProgress(metrics)
 
   useEffect(() => {
     async function fetchDashboardData() {
@@ -244,13 +249,13 @@ export default function AdminDashboard() {
                           fill="none"
                           stroke="#8b5cf6"
                           strokeWidth="3"
-                          strokeDasharray={`${dashboardData?.project_progress || 70}, 100`}
+                          strokeDasharray={`${projectProgress}, 100`}
                           strokeLinecap="round"
                         />
                       </svg>
                       <div className="absolute inset-0 flex items-center justify-center">
                         <span className="text-xl font-bold text-gray-900">
-                          {dashboardData?.project_progress || 70}%
+                          {projectProgress}%
                         </span>
                       </div>
                     </div>

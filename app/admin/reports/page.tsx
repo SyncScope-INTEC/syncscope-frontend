@@ -19,6 +19,7 @@ import { CardSkeleton } from "@/components/skeletons/card-skeleton"
 import { ProjectSelector } from "@/components/selectors/project-selector"
 import { useDashboardMetrics } from "@/lib/hooks/useDashboardMetrics"
 import { formatDuration } from "@/lib/utils/metrics"
+import { calculateProjectProgress, getCurrentPhase } from "@/lib/utils/projectProgress"
 
 export default function ReportsPage() {
   const { user } = useAppSelector((state) => state.auth)
@@ -36,37 +37,10 @@ export default function ReportsPage() {
   // Fetch real metrics for selected project
   const metrics = useDashboardMetrics(selectedProjectId)
 
-  // Calculate project progress based on metrics
-  const calculateProjectProgress = () => {
-    if (!metrics || metrics.loading) return 70 // Default while loading
-    
-    // Simple formula: based on code metrics and session activity
-    // You can adjust this formula as needed
-    const { codeMetrics, codingTime, activeSessions } = metrics
-    
-    // Factors:
-    // - Lines of code written (max 40 points)
-    // - Coding time this week (max 30 points)
-    // - Active sessions (max 30 points)
-    
-    const linesScore = Math.min((codeMetrics.linesAdded / 1000) * 40, 40)
-    const timeScore = Math.min((codingTime.thisWeek / 2400) * 30, 30) // 2400 min = 40 hours
-    const sessionScore = Math.min((activeSessions / 5) * 30, 30)
-    
-    return Math.min(Math.round(linesScore + timeScore + sessionScore), 100)
-  }
+  // Calculate project progress and phase using shared utility
+  const projectProgress = calculateProjectProgress(metrics)
+  const currentPhase = getCurrentPhase(projectProgress)
 
-  const projectProgress = calculateProjectProgress()
-
-  // Determine current project phase based on progress
-  const getCurrentPhase = () => {
-    if (projectProgress < 25) return 0 // Inicio
-    if (projectProgress < 50) return 1 // Planificación
-    if (projectProgress < 75) return 2 // Diseño
-    return 3 // Construcción
-  }
-
-  const currentPhase = getCurrentPhase()
 
   useEffect(() => {
     async function fetchData() {
