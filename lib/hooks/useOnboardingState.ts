@@ -52,10 +52,11 @@ export const useOnboardingState = () => {
             })
           } catch (err) {
             console.error('Error fetching projects:', err)
-            // If error fetching projects, assume new admin
+            // IMPORTANT: On error, default to ESTABLISHED to prevent blocking access
+            // This prevents auto-logout issues
             setOnboardingData({
-              state: ONBOARDING_STATES.NEW_ADMIN,
-              hasProjects: false,
+              state: ONBOARDING_STATES.ESTABLISHED_ADMIN,
+              hasProjects: true, // Assume has projects to allow access
               projectCount: 0,
             })
           }
@@ -89,10 +90,10 @@ export const useOnboardingState = () => {
             })
           } catch (err) {
             console.error('Error fetching supervisor data:', err)
-            // If error, assume new supervisor
+            // IMPORTANT: On error, default to ESTABLISHED to prevent blocking access
             setOnboardingData({
-              state: ONBOARDING_STATES.NEW_SUPERVISOR,
-              hasProjects: false,
+              state: ONBOARDING_STATES.ESTABLISHED_SUPERVISOR,
+              hasProjects: true, // Assume has projects to allow access
               projectCount: 0,
               hasSupervisedUsers: false,
             })
@@ -101,10 +102,19 @@ export const useOnboardingState = () => {
           return
         }
 
-        // Unknown role
+        // Unknown role - allow access
+        setOnboardingData({
+          state: ONBOARDING_STATES.ESTABLISHED_ADMIN,
+          hasProjects: true,
+        })
         setLoading(false)
       } catch (error) {
         console.error('Error detecting onboarding state:', error)
+        // CRITICAL: On any error, default to ESTABLISHED to prevent blocking access
+        setOnboardingData({
+          state: ONBOARDING_STATES.ESTABLISHED_ADMIN,
+          hasProjects: true,
+        })
         setError('Error al detectar el estado de onboarding')
         setLoading(false)
       }
