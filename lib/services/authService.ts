@@ -185,4 +185,44 @@ export const authService = {
     const response = await api.post('/change-initial-password/', data)
     return response.data
   },
+  // Invitations
+  sendInvitation: async (data: { invitee_email: string; role: 'supervisor' | 'developer' }) => {
+    const response = await api.post('/invitations/', data)
+    return response.data
+  },
+
+  getInvitations: async () => {
+    const response = await api.get('/invitations/')
+    return response.data
+  },
+
+  validateInvitation: async (token: string) => {
+    const response = await api.get('/invitations/accept/', { params: { token } })
+    return response.data
+  },
+
+  acceptInvitation: async (token: string) => {
+    const response = await api.post('/invitations/accept/', { token })
+    return response.data
+  },
+
+  resendInvitation: async (invitationId: string) => {
+    try {
+      const response = await api.post('/invitations/resend/', { invitation_id: invitationId })
+      return response.data
+    } catch (error) {
+      console.warn('Resend invitation endpoint not available')
+      throw error
+    }
+  },
+
+  cancelInvitation: async (invitationId: string) => {
+    try {
+      const response = await api.delete(`/invitations/${invitationId}/`)
+      return response.data
+    } catch (error) {
+      console.warn('Cancel invitation endpoint not available')
+      throw error
+    }
+  },
 }
