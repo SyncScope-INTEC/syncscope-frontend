@@ -16,6 +16,9 @@ import { useRouter } from "next/navigation"
 import { isDevMode, getCurrentYears } from "@/lib/utils/devMode"
 import { DashboardSkeleton } from "@/components/skeletons/dashboard-skeleton"
 import { ProjectSelector } from "@/components/selectors/project-selector"
+import { useDashboardMetrics } from "@/lib/hooks/useDashboardMetrics"
+import { formatDuration } from "@/lib/utils/metrics"
+import { MetricCards } from "@/components/dashboard/metric-cards"
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -29,6 +32,9 @@ export default function AdminDashboard() {
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
   const [teamMembers, setTeamMembers] = useState<any[]>([])
   const [loadingTeamMembers, setLoadingTeamMembers] = useState(false)
+
+  // Fetch real metrics for selected project
+  const metrics = useDashboardMetrics(selectedProjectId)
 
   useEffect(() => {
     async function fetchDashboardData() {
@@ -163,7 +169,13 @@ export default function AdminDashboard() {
           {isLoading ? (
             <DashboardSkeleton />
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <>
+              {/* Metrics Cards */}
+              <div className="mb-8">
+                <MetricCards metrics={metrics} />
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <Card className="border-2 border-brand-light">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -410,6 +422,7 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
           </div>
+              </>
           )}
         </main>
       </div>

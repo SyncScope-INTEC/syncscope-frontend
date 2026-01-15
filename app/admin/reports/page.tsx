@@ -17,6 +17,8 @@ import { toast } from "sonner"
 import { TableSkeleton } from "@/components/skeletons/table-skeleton"
 import { CardSkeleton } from "@/components/skeletons/card-skeleton"
 import { ProjectSelector } from "@/components/selectors/project-selector"
+import { useDashboardMetrics } from "@/lib/hooks/useDashboardMetrics"
+import { formatDuration } from "@/lib/utils/metrics"
 
 export default function ReportsPage() {
   const { user } = useAppSelector((state) => state.auth)
@@ -30,6 +32,41 @@ export default function ReportsPage() {
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
   const [teamMembers, setTeamMembers] = useState<any[]>([])
   const [loadingTeamMembers, setLoadingTeamMembers] = useState(false)
+
+  // Fetch real metrics for selected project
+  const metrics = useDashboardMetrics(selectedProjectId)
+
+  // Calculate project progress based on metrics
+  const calculateProjectProgress = () => {
+    if (!metrics || metrics.loading) return 70 // Default while loading
+    
+    // Simple formula: based on code metrics and session activity
+    // You can adjust this formula as needed
+    const { codeMetrics, codingTime, activeSessions } = metrics
+    
+    // Factors:
+    // - Lines of code written (max 40 points)
+    // - Coding time this week (max 30 points)
+    // - Active sessions (max 30 points)
+    
+    const linesScore = Math.min((codeMetrics.linesAdded / 1000) * 40, 40)
+    const timeScore = Math.min((codingTime.thisWeek / 2400) * 30, 30) // 2400 min = 40 hours
+    const sessionScore = Math.min((activeSessions / 5) * 30, 30)
+    
+    return Math.min(Math.round(linesScore + timeScore + sessionScore), 100)
+  }
+
+  const projectProgress = calculateProjectProgress()
+
+  // Determine current project phase based on progress
+  const getCurrentPhase = () => {
+    if (projectProgress < 25) return 0 // Inicio
+    if (projectProgress < 50) return 1 // Planificación
+    if (projectProgress < 75) return 2 // Diseño
+    return 3 // Construcción
+  }
+
+  const currentPhase = getCurrentPhase()
 
   useEffect(() => {
     async function fetchData() {
@@ -312,24 +349,44 @@ export default function ReportsPage() {
                       fill="none"
                       stroke="#a855f7"
                       strokeWidth="2"
-                      strokeDasharray={`${dashboardData?.project_progress || 70}, 100`}
+                      strokeDasharray={`${projectProgress}, 100`}
                     />
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
                     <span className="text-2xl font-bold text-purple-600">
-                      {dashboardData?.project_progress || 70}%
+                      {projectProgress}%
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* Status Badges */}
-              <div className="space-y-1">
-                {['Inicio', 'Planificación', 'Diseño', 'Construcción'].map((status) => (
-                  <Badge key={status} variant="outline" className="text-xs">
-                    {status}
-                  </Badge>
-                ))}
+              {/* Status Badges with Progress Indicators */}
+              <div className="space-y-2">
+                {['Inicio', 'Planificación', 'Diseño', 'Construcción'].map((status, index) => {
+                  const isCompleted = index < currentPhase
+                  const isCurrent = index === currentPhase
+                  
+                  return (
+                    <div key={status} className="flex items-center gap-2">
+                      <Badge 
+                        variant={isCurrent ? "default" : "outline"} 
+                        className={`text-xs ${
+                          isCompleted ? 'bg-green-100 text-green-700 border-green-300' : 
+                          isCurrent ? 'bg-purple-600 text-white' : 
+                          'text-gray-400 border-gray-200'
+                        }`}
+                      >
+                        {status}
+                      </Badge>
+                      {isCompleted && (
+                        <span className="text-xs text-green-600">✓ Completado</span>
+                      )}
+                      {isCurrent && (
+                        <span className="text-xs text-purple-600">● En progreso</span>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             </div>
           </Card>
