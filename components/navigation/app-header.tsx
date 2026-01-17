@@ -8,9 +8,10 @@ import { useRouter } from "next/navigation"
 import { Bell, User, Settings, LogOut, ChevronDown, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks"
-import { logout } from "@/lib/store/slices/authSlice"
+import { logout, fetchUserProfileImage } from "@/lib/store/slices/authSlice"
 import { alertsService } from "@/lib/services/alertsService"
 import { toast } from "sonner"
+import { getUserInitials } from "@/lib/utils/profileImage"
 
 export function AppHeader() {
   const router = useRouter()
@@ -22,6 +23,7 @@ export function AppHeader() {
   const [unreadCount, setUnreadCount] = useState(0)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const notificationsRef = useRef<HTMLDivElement>(null)
+  const imageLoadedRef = useRef(false) // Track if profile image has been loaded
 
   // Cargar alertas
   useEffect(() => {
@@ -48,6 +50,15 @@ export function AppHeader() {
       return () => clearInterval(interval)
     }
   }, [user])
+
+  // Fetch profile image once when component mounts
+  useEffect(() => {
+    if (user?.id && !imageLoadedRef.current && !user.profileImageUrl) {
+      console.log('🖼️ [AppHeader] Fetching profile image for user:', user.id)
+      imageLoadedRef.current = true
+      dispatch(fetchUserProfileImage(user.id))
+    }
+  }, [user?.id, dispatch])
 
   // Cerrar dropdowns cuando se hace click afuera
   useEffect(() => {
@@ -249,9 +260,25 @@ export function AppHeader() {
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 className="text-gray-900 hover:bg-gray-100 flex items-center gap-2"
               >
-                <div className="w-8 h-8 bg-brand rounded-full flex items-center justify-center text-brand-foreground font-semibold text-sm">
-                  {user?.first_name?.[0]?.toUpperCase() || "U"}
-                </div>
+                {user?.profileImageUrl ? (
+                  <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-purple-200">
+                    <Image
+                      src={user.profileImageUrl}
+                      alt={user?.first_name || 'User'}
+                      width={32}
+                      height={32}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement
+                        target.style.display = 'none'
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-purple-700 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                    {getUserInitials(user?.first_name, user?.last_name, user?.email)}
+                  </div>
+                )}
                 <span className="hidden md:block text-gray-900">{user?.first_name || "Usuario"}</span>
                 {user?.company_name && (
                   <span className="hidden lg:block text-xs text-gray-500">({user.company_name})</span>
