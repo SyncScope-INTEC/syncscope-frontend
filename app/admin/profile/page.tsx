@@ -293,7 +293,7 @@ export default function AdminProfilePage() {
           </Card>
 
           {/* Activity Card */}
-          <Card className="p-6 border-2 border-yellow-300 bg-yellow-50/50 flex flex-col">
+          <Card className="p-6 border-2 border-purple-200 flex flex-col">
             <h3 className="text-lg font-bold text-gray-900 mb-4">Próximas actividades</h3>
 
             {activities.length > 0 ? (
