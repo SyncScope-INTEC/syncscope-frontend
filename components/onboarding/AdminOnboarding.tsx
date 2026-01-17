@@ -62,13 +62,18 @@ export function AdminOnboarding() {
         description: `Equipo del proyecto ${projectData.name}`,
       })
 
+      // TODO: Revisar respuesta del backend. Actualmente parece no devolver el ID del equipo creado,
+      // lo que causa error en la creación del proyecto ("team_id: This field is required").
+      // Verificar si 'team.id' viene undefined.
+      console.log('Team created response:', team); // Debug log
+
       // Then create project with team
       const project = await managementService.createProject({
         name: projectData.name,
         description: projectData.description || 'Proyecto creado durante onboarding',
         team: team.id,
-        project_url: projectData.project_url || undefined,
-        git_repository_url: projectData.git_repository_url || undefined,
+        url: projectData.project_url || undefined,
+        repository_url: projectData.git_repository_url || undefined,
       })
 
       setCreatedProjectId(project.id)
@@ -139,7 +144,7 @@ export function AdminOnboarding() {
 
     setLoading(false)
     const successCount = updatedInvitations.filter(inv => inv.status === 'sent').length
-    
+
     if (successCount > 0) {
       toast.success(`${successCount} invitación(es) enviada(s) exitosamente`)
     }
@@ -156,21 +161,19 @@ export function AdminOnboarding() {
       {[1, 2, 3].map((step) => (
         <div key={step} className="flex items-center">
           <div
-            className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
-              step === currentStep
-                ? 'bg-purple-600 text-white'
-                : step < currentStep
+            className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${step === currentStep
+              ? 'bg-purple-600 text-white'
+              : step < currentStep
                 ? 'bg-green-500 text-white'
                 : 'bg-gray-200 text-gray-500'
-            }`}
+              }`}
           >
             {step < currentStep ? <CheckCircle className="w-5 h-5" /> : step}
           </div>
           {step < 3 && (
             <div
-              className={`w-16 h-1 mx-2 ${
-                step < currentStep ? 'bg-green-500' : 'bg-gray-200'
-              }`}
+              className={`w-16 h-1 mx-2 ${step < currentStep ? 'bg-green-500' : 'bg-gray-200'
+                }`}
             />
           )}
         </div>
@@ -187,11 +190,11 @@ export function AdminOnboarding() {
         ¡Bienvenido a SyncScope!
       </h1>
       <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-        Aún no tienes ningún proyecto monitoreado. Crea un proyecto para empezar a 
-        analizar el rendimiento de los desarrolladores, monitorear la calidad del código y 
+        Aún no tienes ningún proyecto monitoreado. Crea un proyecto para empezar a
+        analizar el rendimiento de los desarrolladores, monitorear la calidad del código y
         optimizar tu flujo de trabajo.
       </p>
-      
+
       <div className="flex gap-4 justify-center mt-8">
         <Button
           onClick={() => setCurrentStep(2)}
@@ -442,7 +445,7 @@ export function AdminOnboarding() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-blue-50 to-purple-50 p-4">
       <Card className="max-w-4xl w-full p-8 shadow-xl">
         {renderStepIndicator()}
-        
+
         {currentStep === 1 && renderStep1()}
         {currentStep === 2 && renderStep2()}
         {currentStep === 3 && renderStep3()}
