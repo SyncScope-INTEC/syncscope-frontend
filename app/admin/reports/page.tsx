@@ -58,6 +58,7 @@ export default function ReportsPage() {
 
         setProfileData(profileDataResponse)
 
+
         setProfile({
           firstName: profileDataResponse?.first_name || user?.first_name || 'Usuario',
           lastName: profileDataResponse?.last_name || user?.last_name || '',
@@ -66,14 +67,14 @@ export default function ReportsPage() {
           phone: profileDataResponse?.phone_number || profileDataResponse?.phone || '',
           identifier: user?.id || '000000000',
           company: profileDataResponse?.company?.name || user?.company?.name || user?.company_name || 'Sin empresa',
-          profileImage: profileDataResponse?.profile_image_path || profileDataResponse?.profile_image || '/professional-woman-smiling.png',
+          profileImage: user?.profileImageUrl || null,
         })
 
         setDashboardData(dashboard)
         setSessionStats(stats)
         const projectsList = userProjects?.results || []
         setProjects(projectsList)
-        
+
         // Auto-select first project if available
         if (projectsList.length > 0 && !selectedProjectId) {
           setSelectedProjectId(projectsList[0].id)
@@ -156,8 +157,8 @@ export default function ReportsPage() {
 
       try {
         setLoadingTeamMembers(true)
-        const members = await managementService.getAllTeamMembers({ 
-          project: selectedProjectId 
+        const members = await managementService.getAllTeamMembers({
+          project: selectedProjectId
         })
         setTeamMembers(members?.results || [])
       } catch (error) {
@@ -180,7 +181,7 @@ export default function ReportsPage() {
             <div className="h-9 bg-gray-200 rounded w-64 mb-2 animate-pulse"></div>
             <div className="h-6 bg-gray-200 rounded w-32 animate-pulse"></div>
           </div>
-          
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
             <CardSkeleton variant="tall" />
             <CardSkeleton variant="tall" />
@@ -339,16 +340,15 @@ export default function ReportsPage() {
                 {['Inicio', 'Planificación', 'Diseño', 'Construcción'].map((status, index) => {
                   const isCompleted = index < currentPhase
                   const isCurrent = index === currentPhase
-                  
+
                   return (
                     <div key={status} className="flex items-center gap-2">
-                      <Badge 
-                        variant={isCurrent ? "default" : "outline"} 
-                        className={`text-xs ${
-                          isCompleted ? 'bg-green-100 text-green-700 border-green-300' : 
-                          isCurrent ? 'bg-purple-600 text-white' : 
-                          'text-gray-400 border-gray-200'
-                        }`}
+                      <Badge
+                        variant={isCurrent ? "default" : "outline"}
+                        className={`text-xs ${isCompleted ? 'bg-green-100 text-green-700 border-green-300' :
+                          isCurrent ? 'bg-purple-600 text-white' :
+                            'text-gray-400 border-gray-200'
+                          }`}
                       >
                         {status}
                       </Badge>
@@ -402,14 +402,14 @@ export default function ReportsPage() {
               />
             </div>
           </div>
-          <TeamMembersTable 
+          <TeamMembersTable
             members={teamMembers.map(member => ({
               id: member.id,
               name: member.user_name,
               role: member.role,
               lastActivity: 'Activo',
-            }))} 
-            isLoading={loadingTeamMembers} 
+            }))}
+            isLoading={loadingTeamMembers}
           />
         </div>
       </main>

@@ -63,8 +63,29 @@ export const authService = {
 
   // Profile Image
   getUserImage: async (userId: string) => {
-    const response = await api.get(`/users/${userId}/image/`)
-    return response.data
+    try {
+      const response = await api.get(`/users/${userId}/image/`, {
+        responseType: 'blob', // Important: get the image as blob
+        validateStatus: (status) => (status >= 200 && status < 300) || status === 404
+      })
+
+      // If 404, user has no profile image
+      if (response.status === 404) {
+        console.log('🖼️ [authService] No profile image found (404)')
+        return null
+      }
+
+      console.log('🖼️ [authService] Image loaded, blob size:', response.data.size, 'bytes')
+
+      // Create a blob URL from the response
+      const imageBlob = response.data
+      const imageUrl = URL.createObjectURL(imageBlob)
+      console.log('🖼️ [authService] Created blob URL:', imageUrl)
+      return imageUrl
+    } catch (error) {
+      console.error('Error fetching user image:', error)
+      return null
+    }
   },
 
   uploadUserImage: async (userId: string, imageFile: File) => {

@@ -8,12 +8,15 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { EditProfileModal } from "@/components/modals/edit-profile-modal"
 import { ProfileSkeleton } from "@/components/skeletons/profile-skeleton"
-import { useAppSelector } from "@/lib/store/hooks"
+import { useAppSelector, useAppDispatch } from "@/lib/store/hooks"
 import { authService } from "@/lib/services/authService"
 import { monitoringService } from "@/lib/services/monitoringService"
 import { toast } from "sonner"
+import { getUserInitials } from "@/lib/utils/profileImage"
+import { fetchUserProfileImage } from "@/lib/store/slices/authSlice"
 
 export default function AdminProfilePage() {
+  const dispatch = useAppDispatch()
   const { user } = useAppSelector((state) => state.auth)
   const [profile, setProfile] = useState<any>(null)
   const [activities, setActivities] = useState<any[]>([])
@@ -28,23 +31,12 @@ export default function AdminProfilePage() {
         // Obtener perfil del usuario desde el backend
         const profileData = await authService.getProfile()
 
-        // Construir URL completa de imagen de perfil
-        let profileImageUrl = ''
-        if (profileData.profile_image_path) {
-          // Construir URL completa con el base URL del API
-          const AUTH_API_URL = process.env.NEXT_PUBLIC_AUTH_URL || 'http://localhost:8000'
-          profileImageUrl = `${AUTH_API_URL}/media/${profileData.profile_image_path}`
-        }
-
+        // Fetch profile image via Redux
         if (user?.id) {
-          try {
-            const imageData = await authService.getUserImage(user.id)
-            if (imageData?.url) {
-              profileImageUrl = imageData.url
-            }
-          } catch (_imgError) {
-            console.log('No profile image found, using default')
-          }
+          console.log('🖼️ [Profile Page] Dispatching fetchUserProfileImage for user:', user.id)
+          dispatch(fetchUserProfileImage(user.id))
+        } else {
+          console.warn('⚠️ [Profile Page] No user.id available to fetch image')
         }
 
         // Obtener últimas sesiones como actividades
@@ -80,8 +72,10 @@ export default function AdminProfilePage() {
           status: profileData.is_active !== undefined ? (profileData.is_active ? 'Activo' : 'Inactivo') : ((user as any)?.is_active ? 'Activo' : 'Inactivo'),
           createdDate: '',
           lastUpdated: '',
-          profileImage: profileImageUrl,
+          profileImage: user?.profileImageUrl || null,
         })
+
+        console.log('🖼️ [Profile Page] Profile state set with image:', user?.profileImageUrl)
 
         setActivities(mappedActivities)
       } catch (error: any) {
@@ -112,10 +106,21 @@ export default function AdminProfilePage() {
       }
     }
 
-    if (user) {
+    if (user?.id) {
       fetchProfileData()
     }
-  }, [user])
+  }, [user?.id]) // Only re-run when user ID changes, not when user object changes
+
+  // Separate effect to update profile image when it loads from Redux
+  useEffect(() => {
+    if (user?.profileImageUrl && profile) {
+      console.log('🖼️ [Profile Page] Updating profile with loaded image:', user.profileImageUrl)
+      setProfile((prev: any) => ({
+        ...prev,
+        profileImage: user.profileImageUrl
+      }))
+    }
+  }, [user?.profileImageUrl]) // Watch for changes to profileImageUrl
 
   const handleSaveProfile = async (data: { firstName: string; lastName: string; phone: string; timezone: string; image?: File }) => {
     try {
@@ -135,14 +140,10 @@ export default function AdminProfilePage() {
 
       toast.success('Perfil actualizado exitosamente')
 
-      // Recargar perfil completo desde el backend
+      // Reload profile and refetch image
       const updatedProfile = await authService.getProfile()
-      
-      // Construir URL completa de imagen de perfil
-      let profileImageUrl = ''
-      if (updatedProfile.profile_image_path) {
-        const AUTH_API_URL = process.env.NEXT_PUBLIC_AUTH_URL || 'http://localhost:8000'
-        profileImageUrl = `${AUTH_API_URL}/media/${updatedProfile.profile_image_path}?t=${Date.now()}`
+      if (user?.id) {
+        dispatch(fetchUserProfileImage(user.id))
       }
 
       setProfile({
@@ -159,7 +160,7 @@ export default function AdminProfilePage() {
         status: updatedProfile.is_active ? 'Activo' : 'Inactivo',
         createdDate: '',
         lastUpdated: '',
-        profileImage: profileImageUrl,
+        profileImage: user?.profileImageUrl || null,
       })
     } catch (error: any) {
       console.error('Error updating profile:', error)
@@ -209,7 +210,7 @@ export default function AdminProfilePage() {
             <div className="flex flex-col md:flex-row gap-6">
               {/* Profile Image - Larger */}
               <div className="flex-shrink-0">
-                <div className="relative w-48 h-56 rounded-lg overflow-hidden border-2 border-purple-200 bg-gray-200">
+                <div className="relative w-48 h-56 rounded-lg overflow-hidden border-2 border-purple-200 bg-gradient-to-br from-purple-100 to-purple-200">
                   {profile.profileImage ? (
                     <Image
                       src={profile.profileImage}
@@ -221,12 +222,11 @@ export default function AdminProfilePage() {
                         target.style.display = 'none'
                       }}
                     />
-                  ) : null}
-                  {!profile.profileImage && (
+                  ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <svg className="w-24 h-24 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                      </svg>
+                      <span className="text-6xl font-bold text-purple-700">
+                        {getUserInitials(profile.firstName, profile.lastName, profile.email)}
+                      </span>
                     </div>
                   )}
                 </div>

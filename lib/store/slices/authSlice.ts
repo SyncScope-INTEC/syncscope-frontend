@@ -9,6 +9,8 @@ interface User {
   last_name: string
   company_name?: string
   role: string
+  plan?: string
+  profileImageUrl?: string | null
   company?: {
     id: string
     name: string
@@ -159,6 +161,22 @@ export const validateSession = createAsyncThunk(
   }
 )
 
+// Fetch user profile image
+export const fetchUserProfileImage = createAsyncThunk(
+  'auth/fetchUserProfileImage',
+  async (userId: string, { rejectWithValue }) => {
+    console.log('🖼️ [Redux Thunk] Starting fetchUserProfileImage for userId:', userId)
+    try {
+      const imageUrl = await authService.getUserImage(userId)
+      console.log('🖼️ [Redux Thunk] Received imageUrl:', imageUrl)
+      return imageUrl // Returns blob URL or null
+    } catch (error: any) {
+      console.error('❌ [Redux Thunk] Error in fetchUserProfileImage:', error)
+      return rejectWithValue(error.response?.data?.message || 'Error al cargar imagen')
+    }
+  }
+)
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -183,6 +201,11 @@ const authSlice = createSlice({
       state.tokenExpiresAt = Date.now() + 60 * 60 * 1000
       state.lastActivity = Date.now()
       state.isAuthenticated = true
+    },
+    setProfileImage: (state, action: PayloadAction<string | null>) => {
+      if (state.user) {
+        state.user.profileImageUrl = action.payload
+      }
     },
     updateLastActivity: (state) => {
       state.lastActivity = Date.now()
@@ -292,6 +315,19 @@ const authSlice = createSlice({
         return initialState
       })
 
+    // Fetch User Profile Image
+    builder
+      .addCase(fetchUserProfileImage.fulfilled, (state, action) => {
+        if (state.user) {
+          state.user.profileImageUrl = action.payload
+        }
+      })
+      .addCase(fetchUserProfileImage.rejected, (state) => {
+        if (state.user) {
+          state.user.profileImageUrl = null
+        }
+      })
+
     // Limpiar todo cuando se purga el persist
     builder.addCase(PURGE, () => {
       return initialState
@@ -299,5 +335,5 @@ const authSlice = createSlice({
   },
 })
 
-export const { clearError, setCredentials, updateLastActivity, logoutLocal } = authSlice.actions
+export const { clearError, setCredentials, updateLastActivity, logoutLocal, setProfileImage } = authSlice.actions
 export default authSlice.reducer
