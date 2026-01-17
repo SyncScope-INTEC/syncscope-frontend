@@ -23,15 +23,45 @@ export function OnboardingWrapper({ children }: OnboardingWrapperProps) {
     )
   }
 
-  // Show onboarding for new users
-  if (onboardingState === ONBOARDING_STATES.NEW_ADMIN) {
-    return <AdminOnboarding />
-  }
+  // Show custom header with logout for onboarding
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <header className="fixed top-0 right-0 p-4 z-50">
+        <button
+          onClick={() => {
+            // Clear local storage and state logic would go here
+            // For now specific implementation depends on auth slice but usually:
+            localStorage.removeItem('persist:root')
+            window.location.href = '/auth/admin-login'
+          }}
+          className="text-gray-500 hover:text-red-600 font-medium text-sm flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur rounded-lg border border-gray-200 shadow-sm transition-colors"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" x2="9" y1="12" y2="12" />
+          </svg>
+          Cerrar Sesión
+        </button>
+      </header>
 
-  if (onboardingState === ONBOARDING_STATES.NEW_SUPERVISOR) {
-    return <SupervisorOnboarding />
-  }
-
-  // Show normal content for established users
-  return <>{children}</>
+      {onboardingState === ONBOARDING_STATES.NEW_ADMIN ? (
+        <AdminOnboarding />
+      ) : onboardingState === ONBOARDING_STATES.NEW_SUPERVISOR ? (
+        <SupervisorOnboarding />
+      ) : (
+        children
+      )}
+    </div>
+  )
 }

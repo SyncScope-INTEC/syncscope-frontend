@@ -129,6 +129,35 @@ export default function ChangeInitialPasswordPage() {
             )}
           </div>
 
+          {/* Logout Button */}
+          <div className="absolute top-4 right-4 md:top-8 md:right-8">
+            <Button
+              variant="ghost"
+              onClick={() => {
+                localStorage.removeItem('persist:root')
+                router.push('/auth/admin-login')
+              }}
+              className="text-gray-500 hover:text-red-600 gap-2"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" x2="9" y1="12" y2="12" />
+              </svg>
+              Cerrar Sesión
+            </Button>
+          </div>
+
           {/* Form */}
           <Card className="p-8 border-2 border-purple-200 bg-white/80 backdrop-blur">
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -234,7 +263,7 @@ export default function ChangeInitialPasswordPage() {
           {/* Info Box */}
           <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <p className="text-sm text-blue-800">
-              <strong>Nota:</strong> Tu contraseña temporal fue enviada a tu correo electrónico. 
+              <strong>Nota:</strong> Tu contraseña temporal fue enviada a tu correo electrónico.
               Si no la encuentras, revisa tu carpeta de spam.
             </p>
           </div>
