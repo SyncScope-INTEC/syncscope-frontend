@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import Image from "next/image"
 import { AppHeader } from "@/components/navigation/app-header"
 import { Footer } from "@/components/footer"
@@ -22,6 +22,7 @@ export default function AdminProfilePage() {
   const [activities, setActivities] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [showEditModal, setShowEditModal] = useState(false)
+  const imageLoadedRef = useRef(false) // Track if image has been loaded
 
   useEffect(() => {
     async function fetchProfileData() {
@@ -31,12 +32,13 @@ export default function AdminProfilePage() {
         // Obtener perfil del usuario desde el backend
         const profileData = await authService.getProfile()
 
-        // Fetch profile image via Redux
-        if (user?.id) {
+        // Fetch profile image via Redux (only once)
+        if (user?.id && !imageLoadedRef.current && !user.profileImageUrl) {
           console.log('🖼️ [Profile Page] Dispatching fetchUserProfileImage for user:', user.id)
+          imageLoadedRef.current = true
           dispatch(fetchUserProfileImage(user.id))
-        } else {
-          console.warn('⚠️ [Profile Page] No user.id available to fetch image')
+        } else if (user?.profileImageUrl) {
+          console.log('🖼️ [Profile Page] Image already loaded from Redux:', user.profileImageUrl)
         }
 
         // Obtener últimas sesiones como actividades
