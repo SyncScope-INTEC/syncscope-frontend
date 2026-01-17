@@ -38,7 +38,7 @@ export default function SettingsPage() {
 
       // Transform supervised users to flat list if needed, depending on API response structure
       // Assuming headers getSupervisedUsers returns list of supervision objects
-      const mappedUsers = usersData?.map((s: any) => s.supervisee) || []
+      const mappedUsers = (usersData?.map((s: any) => s.supervisee) || []).filter(Boolean)
 
       // Add current user if not in list
       if (user && !mappedUsers.find((u: any) => u.id === user.id)) {
