@@ -86,8 +86,22 @@ const processQueue = (error: any, token: string | null = null) => {
 const responseErrorInterceptor = async (error: any) => {
   const originalRequest = error.config
 
-  // Ignorar errores de imagen (404/401) para evitar loops de logout
-  if (originalRequest.url?.includes('/image/')) {
+  // Lista de endpoints que NO deben disparar refresh token automático
+  // Estos son endpoints opcionales o de solo lectura que pueden fallar sin afectar la sesión
+  const excludedEndpoints = [
+    '/image/',           // Imágenes de perfil (pueden no existir)
+    '/monitoring/',      // Métricas y monitoreo (pueden tener permisos restrictivos)
+    '/alerts/',          // Alertas (no críticas para la sesión)
+    '/sessions/',        // Sesiones de usuario (solo lectura)
+  ]
+
+  // Si la petición es a un endpoint excluido, no intentar refresh
+  const isExcluded = excludedEndpoints.some(endpoint =>
+    originalRequest.url?.includes(endpoint)
+  )
+
+  if (isExcluded) {
+    console.log(`⚠️ [API] Skipping token refresh for excluded endpoint: ${originalRequest.url}`)
     return Promise.reject(error)
   }
 
