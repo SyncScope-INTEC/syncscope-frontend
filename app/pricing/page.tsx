@@ -130,55 +130,10 @@ export default function PricingPage() {
               <div>
                 <h3 className="text-xl font-bold text-gray-900 mb-2">Enterprise</h3>
                 <p className="text-sm text-gray-600 mb-4">
-                  Para organizaciones que necesitan control total y escalabilidad
+                  Pensado para equipos en expansión y gestión más exigente
                 </p>
                 <div className="flex items-baseline">
                   <span className="text-4xl font-bold text-gray-900">$69</span>
-                  <span className="text-gray-500 ml-1">/mes</span>
-                </div>
-              </div>
-
-              <ul className="space-y-3">
-                <li className="flex items-center space-x-3">
-                  <Check className="w-4 h-4 text-purple-600" />
-                  <span className="text-sm text-gray-700">Usuarios ilimitados</span>
-                </li>
-                <li className="flex items-center space-x-3">
-                  <Check className="w-4 h-4 text-purple-600" />
-                  <span className="text-sm text-gray-700">Todas las funciones de Growth</span>
-                </li>
-                <li className="flex items-center space-x-3">
-                  <Check className="w-4 h-4 text-purple-600" />
-                  <span className="text-sm text-gray-700">Integraciones completas</span>
-                </li>
-                <li className="flex items-center space-x-3">
-                  <Check className="w-4 h-4 text-purple-600" />
-                  <span className="text-sm text-gray-700">Panel de control para administradores</span>
-                </li>
-                <li className="flex items-center space-x-3">
-                  <Check className="w-4 h-4 text-purple-600" />
-                  <span className="text-sm text-gray-700">Soporte premium y onboarding asistido</span>
-                </li>
-              </ul>
-
-              <Button
-                onClick={() => handleSelectPlan('enterprise')}
-                className="w-full bg-brand hover:bg-brand-hover text-brand-foreground rounded-full"
-                disabled={isLoading}
-              >
-                {loadingPlan === 'enterprise' ? 'Procesando...' : 'Iniciar'}
-              </Button>
-            </div>
-          </Card>
-
-          {/* Growth Plan */}
-          <Card className="p-8 border-2 border-purple-200 bg-white/80 backdrop-blur hover:border-purple-300 transition-colors">
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Growth</h3>
-                <p className="text-sm text-gray-600 mb-4">Pensado para equipos en expansión y gestión más exigente</p>
-                <div className="flex items-baseline">
-                  <span className="text-4xl font-bold text-gray-900">$149</span>
                   <span className="text-gray-500 ml-1">/mes</span>
                 </div>
               </div>
@@ -198,11 +153,56 @@ export default function PricingPage() {
                 </li>
                 <li className="flex items-center space-x-3">
                   <Check className="w-4 h-4 text-purple-600" />
-                  <span className="text-sm text-gray-700">Auditoría de código automatizada</span>
+                  <span className="text-sm text-gray-700">Panel de control para administradores</span>
                 </li>
                 <li className="flex items-center space-x-3">
                   <Check className="w-4 h-4 text-purple-600" />
                   <span className="text-sm text-gray-700">Alertas por rendimiento</span>
+                </li>
+              </ul>
+
+              <Button
+                onClick={() => handleSelectPlan('enterprise')}
+                className="w-full bg-brand hover:bg-brand-hover text-brand-foreground rounded-full"
+                disabled={isLoading}
+              >
+                {loadingPlan === 'enterprise' ? 'Procesando...' : 'Iniciar'}
+              </Button>
+            </div>
+          </Card>
+
+          {/* Growth Plan */}
+          <Card className="p-8 border-2 border-purple-200 bg-white/80 backdrop-blur hover:border-purple-300 transition-colors">
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Growth</h3>
+                <p className="text-sm text-gray-600 mb-4">Para organizaciones que necesitan control total y escalabilidad</p>
+                <div className="flex items-baseline">
+                  <span className="text-4xl font-bold text-gray-900">$149</span>
+                  <span className="text-gray-500 ml-1">/mes</span>
+                </div>
+              </div>
+
+              <ul className="space-y-3">
+                <li className="flex items-center space-x-3">
+                  <Check className="w-4 h-4 text-purple-600" />
+                  <span className="text-sm text-gray-700">Usuarios ilimitados</span>
+                </li>
+                <li className="flex items-center space-x-3">
+                  <Check className="w-4 h-4 text-purple-600" />
+                  <span className="text-sm text-gray-700">Todas las funciones de Enterprise</span>
+                </li>
+                <li className="flex items-center space-x-3">
+                  <Check className="w-4 h-4 text-purple-600" />
+                  <span className="text-sm text-gray-700">Integraciones completas</span>
+                </li>
+                <li className="flex items-center space-x-3">
+                  <Check className="w-4 h-4 text-purple-600" />
+                  <span className="text-sm text-gray-700">Auditoría de código automatizada</span>
+                </li>
+                <li className="flex items-center space-x-3">
+                  <Check className="w-4 h-4 text-purple-600" />
+                  <span className="text-sm text-gray-700">Soporte premium y onboarding asistido</span>
                 </li>
               </ul>
 
