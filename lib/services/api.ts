@@ -66,13 +66,47 @@ const requestInterceptor = (config: any) => {
   return config
 }
 
+// Variables para manejar la concurrencia en el refresh token
+let isRefreshing = false
+let failedQueue: any[] = []
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error)
+    } else {
+      prom.resolve(token)
+    }
+  })
+
+  failedQueue = []
+}
+
 // Response interceptor para manejar errores 401
 const responseErrorInterceptor = async (error: any) => {
   const originalRequest = error.config
 
+  // Ignorar errores de imagen (404/401) para evitar loops de logout
+  if (originalRequest.url?.includes('/image/')) {
+    return Promise.reject(error)
+  }
+
   // Si es un error 401 y no es un retry
   if (error.response?.status === 401 && !originalRequest._retry) {
+    if (isRefreshing) {
+      // Si ya se está refrescando, agregar a la cola
+      return new Promise(function (resolve, reject) {
+        failedQueue.push({ resolve, reject })
+      }).then((token) => {
+        originalRequest.headers['Authorization'] = 'Bearer ' + token
+        return axios(originalRequest)
+      }).catch(err => {
+        return Promise.reject(err)
+      })
+    }
+
     originalRequest._retry = true
+    isRefreshing = true
 
     try {
       // Intentar refrescar el token
@@ -115,6 +149,10 @@ const responseErrorInterceptor = async (error: any) => {
 
           console.log('Token refreshed successfully')
 
+          // Procesar la cola de peticiones en espera
+          processQueue(null, newAccessToken)
+          isRefreshing = false
+
           // Reintentar la petición original con el nuevo token
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
           return axios(originalRequest)
@@ -123,11 +161,15 @@ const responseErrorInterceptor = async (error: any) => {
           console.log('No persisted state found, redirecting to login...')
           localStorage.removeItem('persist:root')
           window.location.href = '/auth/admin-login'
+          isRefreshing = false
         }
       }
     } catch (refreshError: any) {
       // Si falla el refresh (refresh token expirado o inválido), limpiar el estado y redirigir
-      console.log('Refresh token failed or expired, clearing session...', refreshError.response?.status)
+      console.log('Refresh token failed, clearing session...', refreshError)
+      processQueue(refreshError, null)
+      isRefreshing = false
+
       if (typeof window !== 'undefined') {
         localStorage.removeItem('persist:root')
         window.location.href = '/auth/admin-login'
