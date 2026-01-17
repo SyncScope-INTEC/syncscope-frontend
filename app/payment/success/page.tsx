@@ -29,10 +29,12 @@ export default function PaymentSuccessPage() {
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
-    phone_number: '',
+    phone_number: '+1 ',
     company_name: '',
     password: '',
     password_confirm: '',
+    role: 'admin',
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
   })
 
   const [creating, setCreating] = useState(false)
@@ -80,6 +82,32 @@ export default function PaymentSuccessPage() {
     })
   }
 
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value
+
+    // Ensure it starts with +1
+    if (!value.startsWith('+1')) {
+      value = '+1 ' + value.replace(/^\+1/, '').trim()
+    }
+
+    // Example simple formatting logic could be added here if needed, 
+    // but enforcing +1 is the main requirement.
+    // For now, allowing free digits after +1 but we could enforce regex.
+
+    setFormData({
+      ...formData,
+      phone_number: value
+    })
+  }
+
+  const handleRoleChange = (role: string) => {
+    setFormData({ ...formData, role })
+  }
+
+  const handleTimezoneChange = (timezone: string) => {
+    setFormData({ ...formData, timezone })
+  }
+
   const handleCreateAccount = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -110,7 +138,7 @@ export default function PaymentSuccessPage() {
         password: formData.password,
         password_confirm: formData.password_confirm,
         company_name: formData.company_name,
-        role: 'admin', // Siempre admin para quien paga
+        role: 'admin', // Always admin
         plan: plan,
       })
 
@@ -205,38 +233,71 @@ export default function PaymentSuccessPage() {
                 </div>
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="company_name" className="text-gray-900 font-medium">
+                  Nombre de la empresa
+                </Label>
+                <Input
+                  id="company_name"
+                  type="text"
+                  placeholder="Mi Empresa S.A."
+                  value={formData.company_name}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border-2 border-purple-200 rounded-lg focus:border-purple-400 focus:ring-0"
+                  disabled={creating}
+                  required
+                />
+              </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="phone_number" className="text-gray-900 font-medium">
+                  Teléfono
+                </Label>
+                <Input
+                  id="phone_number"
+                  type="tel"
+                  placeholder="+1 (555) 000-0000"
+                  value={formData.phone_number}
+                  onChange={handlePhoneChange}
+                  className="w-full px-4 py-3 border-2 border-purple-200 rounded-lg focus:border-purple-400 focus:ring-0"
+                  disabled={creating}
+                  required
+                />
+              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="role" className="text-gray-900 font-medium">
-                    Rol
+                  <Label htmlFor="password" className="text-gray-900 font-medium">
+                    Contraseña
                   </Label>
-                  <Select value={formData.role} onValueChange={handleRoleChange} disabled={creating}>
-                    <SelectTrigger className="w-full px-4 py-3 border-2 border-purple-200 rounded-lg focus:border-purple-400 focus:ring-0">
-                      <SelectValue placeholder="Selecciona tu rol" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="developer">Desarrollador</SelectItem>
-                      <SelectItem value="supervisor">Supervisor</SelectItem>
-                      <SelectItem value="admin">Administrador</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="********"
+                    value={formData.password}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border-2 border-purple-200 rounded-lg focus:border-purple-400 focus:ring-0"
+                    disabled={creating}
+                    required
+                  />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="timezone" className="text-gray-900 font-medium">
-                    Zona horaria
+                  <Label htmlFor="password_confirm" className="text-gray-900 font-medium">
+                    Confirmar Contraseña
                   </Label>
-                  <TimezoneSelect
-                    value={formData.timezone}
-                    onChange={handleTimezoneChange}
+                  <Input
+                    id="password_confirm"
+                    type="password"
+                    placeholder="********"
+                    value={formData.password_confirm}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border-2 border-purple-200 rounded-lg focus:border-purple-400 focus:ring-0"
                     disabled={creating}
+                    required
                   />
                 </div>
               </div>
-
-
 
               <Button
                 type="submit"
@@ -258,7 +319,7 @@ export default function PaymentSuccessPage() {
           {/* Info Box */}
           <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <p className="text-sm text-blue-800">
-              <strong>Importante:</strong> Después de completar el registro, recibirás un correo con tu contraseña temporal. 
+              <strong>Importante:</strong> Después de completar el registro, recibirás un correo con tu contraseña temporal.
               Úsala para iniciar sesión y luego podrás cambiarla por una permanente.
             </p>
           </div>

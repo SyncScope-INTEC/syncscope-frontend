@@ -15,6 +15,9 @@ export const authService = {
     last_name: string
     company_name: string
     role: string
+    phone_number?: string
+    plan?: string
+    timezone?: string
   }) => {
     const response = await api.post('/register/', data)
     return response.data
