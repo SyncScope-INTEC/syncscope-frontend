@@ -66,12 +66,12 @@ export const authService = {
     try {
       const response = await api.get(`/users/${userId}/image/`, {
         responseType: 'blob', // Important: get the image as blob
-        validateStatus: (status) => (status >= 200 && status < 300) || status === 404
+        validateStatus: (status) => (status >= 200 && status < 300) || status === 404 || status === 401
       })
 
-      // If 404, user has no profile image
-      if (response.status === 404) {
-        console.log('🖼️ [authService] No profile image found (404)')
+      // If 404 or 401, user has no profile image or no permission
+      if (response.status === 404 || response.status === 401) {
+        console.log('🖼️ [authService] No profile image found (status:', response.status, ')')
         return null
       }
 
@@ -83,7 +83,7 @@ export const authService = {
       console.log('🖼️ [authService] Created blob URL:', imageUrl)
       return imageUrl
     } catch (error) {
-      console.error('Error fetching user image:', error)
+      console.error('🖼️ [authService] Error fetching user image:', error)
       return null
     }
   },

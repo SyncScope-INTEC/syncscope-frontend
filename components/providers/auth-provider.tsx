@@ -1,10 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks'
 import { validateSession, logoutLocal } from '@/lib/store/slices/authSlice'
 import { persistor } from '@/lib/store'
+
+const VALIDATION_INTERVAL = 5 * 60 * 1000 // 5 minutos
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter()
@@ -12,6 +14,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const dispatch = useAppDispatch()
   const { isAuthenticated, accessToken, refreshToken } = useAppSelector((state) => state.auth)
   const [isValidating, setIsValidating] = useState(true)
+  const lastValidationRef = useRef<number>(0)
 
   useEffect(() => {
     const validateAuth = async () => {
@@ -27,6 +30,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Si no hay tokens, limpiar estado y redirigir
       if (!accessToken || !refreshToken) {
+        console.log('🔐 [AuthProvider] No tokens found, redirecting to login')
         dispatch(logoutLocal())
         await persistor.purge()
         router.push('/auth/admin-login')
@@ -34,16 +38,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return
       }
 
+      // Debouncing: solo validar si han pasado más de VALIDATION_INTERVAL desde la última validación
+      const now = Date.now()
+      const timeSinceLastValidation = now - lastValidationRef.current
+
+      if (timeSinceLastValidation < VALIDATION_INTERVAL && lastValidationRef.current > 0) {
+        console.log('🔐 [AuthProvider] Skipping validation, last validated', Math.floor(timeSinceLastValidation / 1000), 'seconds ago')
+        setIsValidating(false)
+        return
+      }
+
       // Validar la sesión
       try {
+        console.log('🔐 [AuthProvider] Validating session...')
         await dispatch(validateSession()).unwrap()
+        lastValidationRef.current = now
         setIsValidating(false)
-      } catch (error) {
-        // Si falla la validación, limpiar estado y redirigir
-        console.error('Session validation failed:', error)
-        dispatch(logoutLocal())
-        await persistor.purge()
-        router.push('/auth/admin-login')
+        console.log('✅ [AuthProvider] Session validated successfully')
+      } catch (error: any) {
+        // Solo hacer logout si es un error de autenticación real
+        const isAuthError = error?.message?.includes('inválida') || error?.message?.includes('invalid')
+
+        console.error('❌ [AuthProvider] Session validation failed:', {
+          error,
+          isAuthError,
+          message: error?.message
+        })
+
+        if (isAuthError) {
+          console.log('🚪 [AuthProvider] Authentication error, logging out')
+          dispatch(logoutLocal())
+          await persistor.purge()
+          router.push('/auth/admin-login')
+        } else {
+          console.warn('⚠️ [AuthProvider] Validation failed but keeping session (likely network error)')
+        }
+
         setIsValidating(false)
       }
     }

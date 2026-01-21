@@ -93,6 +93,8 @@ const responseErrorInterceptor = async (error: any) => {
     '/monitoring/',      // Métricas y monitoreo (pueden tener permisos restrictivos)
     '/alerts/',          // Alertas (no críticas para la sesión)
     '/sessions/',        // Sesiones de usuario (solo lectura)
+    '/profile/',         // Perfil de usuario (puede fallar sin afectar sesión)
+    '/users/',           // Endpoints de usuarios (pueden tener restricciones de permisos)
   ]
 
   // Si la petición es a un endpoint excluido, no intentar refresh
@@ -179,15 +181,31 @@ const responseErrorInterceptor = async (error: any) => {
         }
       }
     } catch (refreshError: any) {
-      // Si falla el refresh (refresh token expirado o inválido), limpiar el estado y redirigir
-      console.log('Refresh token failed, clearing session...', refreshError)
+      // Distinguir entre errores de autenticación y errores de red
+      const isAuthError = refreshError.response?.status === 401 || refreshError.response?.status === 403
+      const isNetworkError = !refreshError.response
+
+      console.log('🔄 [API] Refresh token failed:', {
+        isAuthError,
+        isNetworkError,
+        status: refreshError.response?.status,
+        message: refreshError.message
+      })
+
       processQueue(refreshError, null)
       isRefreshing = false
 
-      if (typeof window !== 'undefined') {
+      // Solo hacer logout si es un error de autenticación real (token expirado/inválido)
+      // NO hacer logout por errores de red o timeouts
+      if (isAuthError && typeof window !== 'undefined') {
+        console.log('🚪 [API] Refresh token invalid/expired, logging out...')
         localStorage.removeItem('persist:root')
         window.location.href = '/auth/admin-login'
+      } else if (isNetworkError) {
+        console.warn('⚠️ [API] Network error during token refresh, keeping session active')
+        // No hacer logout, solo rechazar la petición original
       }
+
       return Promise.reject(refreshError)
     }
   }
