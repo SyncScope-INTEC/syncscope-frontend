@@ -2,7 +2,7 @@ import { managementApi as api } from './api'
 
 export const managementService = {
   // Projects CRUD
-  getAllProjects: async (params?: { 
+  getAllProjects: async (params?: {
     page?: number
     company?: string  // Filter by company ID (UUID)
     user?: string     // Filter by user ID (UUID) - shows projects where user is a member
@@ -19,7 +19,7 @@ export const managementService = {
   createProject: async (data: {
     name: string
     description?: string
-    team: string // UUID del team
+    team_id: string // UUID del team
     repository_url?: string
     url?: string
   }) => {
@@ -117,22 +117,22 @@ export const managementService = {
 
   // User Projects (using query params)
   getUserProjects: async (userId: string, params?: { page?: number }) => {
-    const response = await api.get('/management/projects/', { 
-      params: { user: userId, ...params } 
+    const response = await api.get('/management/projects/', {
+      params: { user: userId, ...params }
     })
     return response.data
   },
 
   // Projects by Company and User
   getProjectsByCompanyAndUser: async (companyId: string, userId: string, params?: { page?: number }) => {
-    const response = await api.get('/management/projects/', { 
-      params: { company: companyId, user: userId, ...params } 
+    const response = await api.get('/management/projects/', {
+      params: { company: companyId, user: userId, ...params }
     })
     return response.data
   },
 
   // Team Members (separate endpoint)
-  getAllTeamMembers: async (params?: { 
+  getAllTeamMembers: async (params?: {
     page?: number
     project?: string  // Filter team members by project ID (UUID)
   }) => {

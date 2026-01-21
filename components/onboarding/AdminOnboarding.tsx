@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { managementService } from '@/lib/services/managementService'
 import { authService } from '@/lib/services/authService'
 import { toast } from 'sonner'
+import { translateApiError } from '@/lib/utils/error-translator'
 import { Rocket, FolderPlus, Users, CheckCircle, Loader2, Mail, X } from 'lucide-react'
 
 type OnboardingStep = 1 | 2 | 3
@@ -62,16 +63,13 @@ export function AdminOnboarding() {
         description: `Equipo del proyecto ${projectData.name}`,
       })
 
-      // TODO: Revisar respuesta del backend. Actualmente parece no devolver el ID del equipo creado,
-      // lo que causa error en la creación del proyecto ("team_id: This field is required").
-      // Verificar si 'team.id' viene undefined.
-      console.log('Team created response:', team); // Debug log
+      console.log('Team created:', team)
 
-      // Then create project with team
+      // Then create project with team_id
       const project = await managementService.createProject({
         name: projectData.name,
         description: projectData.description || 'Proyecto creado durante onboarding',
-        team: team.id,
+        team_id: team.id,
         url: projectData.project_url || undefined,
         repository_url: projectData.git_repository_url || undefined,
       })
@@ -80,8 +78,9 @@ export function AdminOnboarding() {
       toast.success('¡Proyecto creado exitosamente!')
       setCurrentStep(3)
     } catch (error: any) {
-      toast.error(error?.message || 'Error al crear el proyecto')
-      console.error(error)
+      const errorMessage = translateApiError(error)
+      toast.error(errorMessage)
+      console.error('Error creating project:', error)
     } finally {
       setLoading(false)
     }
@@ -139,6 +138,8 @@ export function AdminOnboarding() {
       } catch (error) {
         updatedInvitations[i].status = 'error'
         setInvitations([...updatedInvitations])
+        const errorMessage = translateApiError(error)
+        toast.error(`Error al invitar a ${updatedInvitations[i].email}: ${errorMessage}`)
       }
     }
 

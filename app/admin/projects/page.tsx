@@ -6,37 +6,119 @@ import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Users, GitBranch, ExternalLink } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Plus, Users, GitBranch, ExternalLink, Loader2 } from "lucide-react"
 import { useAppSelector } from "@/lib/store/hooks"
 import { managementService } from "@/lib/services/managementService"
 import { toast } from "sonner"
+import { translateApiError } from "@/lib/utils/error-translator"
+
+interface Team {
+  id: string
+  name: string
+  description?: string
+}
 
 export default function ProjectsPage() {
   const { user } = useAppSelector((state) => state.auth)
   const [projects, setProjects] = useState<any[]>([])
+  const [teams, setTeams] = useState<Team[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isCreating, setIsCreating] = useState(false)
+
+  // Form state
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    team_id: '',
+    repository_url: '',
+    url: '',
+  })
 
   useEffect(() => {
-    async function fetchProjects() {
+    async function fetchData() {
       try {
         setIsLoading(true)
 
-        // Obtener proyectos del usuario
-        const userProjects = await managementService.getUserProjects(user?.id || '')
-        setProjects(userProjects || [])
+        // Fetch projects and teams in parallel
+        const [userProjects, userTeams] = await Promise.all([
+          managementService.getUserProjects(user?.id || ''),
+          managementService.getAllTeams(),
+        ])
+
+        setProjects(userProjects?.results || [])
+        setTeams(userTeams?.results || [])
       } catch (error: any) {
-        console.error('Error fetching projects:', error)
-        toast.error('Error al cargar proyectos')
+        console.error('Error fetching data:', error)
+        const errorMessage = translateApiError(error)
+        toast.error(errorMessage)
         setProjects([])
+        setTeams([])
       } finally {
         setIsLoading(false)
       }
     }
 
     if (user) {
-      fetchProjects()
+      fetchData()
     }
   }, [user])
+
+  const handleCreateProject = async () => {
+    // Validation
+    if (!formData.name.trim()) {
+      toast.error('El nombre del proyecto es requerido')
+      return
+    }
+
+    if (!formData.team_id) {
+      toast.error('Debes seleccionar un equipo')
+      return
+    }
+
+    setIsCreating(true)
+    try {
+      const newProject = await managementService.createProject({
+        name: formData.name,
+        description: formData.description || undefined,
+        team_id: formData.team_id,
+        repository_url: formData.repository_url || undefined,
+        url: formData.url || undefined,
+      })
+
+      toast.success('¡Proyecto creado exitosamente!')
+
+      // Add new project to list
+      setProjects([newProject, ...projects])
+
+      // Reset form and close dialog
+      setFormData({
+        name: '',
+        description: '',
+        team_id: '',
+        repository_url: '',
+        url: '',
+      })
+      setIsDialogOpen(false)
+    } catch (error: any) {
+      const errorMessage = translateApiError(error)
+      toast.error(errorMessage)
+      console.error('Error creating project:', error)
+    } finally {
+      setIsCreating(false)
+    }
+  }
 
   if (isLoading) {
     return (
@@ -63,7 +145,10 @@ export default function ProjectsPage() {
             <h1 className="text-3xl font-bold text-gray-900">Proyectos</h1>
             <p className="text-gray-600 mt-1">Gestiona tus proyectos y equipos</p>
           </div>
-          <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+          <Button
+            onClick={() => setIsDialogOpen(true)}
+            className="bg-purple-600 hover:bg-purple-700 text-white"
+          >
             <Plus className="w-4 h-4 mr-2" />
             Nuevo Proyecto
           </Button>
@@ -156,7 +241,10 @@ export default function ProjectsPage() {
               <p className="text-gray-600 mb-6">
                 Crea tu primer proyecto para empezar a colaborar con tu equipo
               </p>
-              <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+              <Button
+                onClick={() => setIsDialogOpen(true)}
+                className="bg-purple-600 hover:bg-purple-700 text-white"
+              >
                 <Plus className="w-4 h-4 mr-2" />
                 Crear Proyecto
               </Button>
@@ -164,6 +252,115 @@ export default function ProjectsPage() {
           </Card>
         )}
       </main>
+
+      {/* Create Project Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Crear Nuevo Proyecto</DialogTitle>
+            <DialogDescription>
+              Completa la información del proyecto. Los campos marcados con * son obligatorios.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="name">
+                  Nombre del proyecto <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="Ej: Sistema de Ventas"
+                  disabled={isCreating}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="team">
+                  Equipo <span className="text-red-500">*</span>
+                </Label>
+                <select
+                  id="team"
+                  value={formData.team_id}
+                  onChange={(e) => setFormData({ ...formData, team_id: e.target.value })}
+                  disabled={isCreating}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                  <option value="">Seleccionar equipo...</option>
+                  {teams.map((team) => (
+                    <option key={team.id} value={team.id}>
+                      {team.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="description">Descripción</Label>
+              <Textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Describe brevemente el proyecto..."
+                disabled={isCreating}
+                rows={3}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="url">URL del Proyecto</Label>
+              <Input
+                id="url"
+                type="url"
+                value={formData.url}
+                onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+                placeholder="https://miproyecto.com"
+                disabled={isCreating}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="repository_url">URL del Repositorio</Label>
+              <Input
+                id="repository_url"
+                type="url"
+                value={formData.repository_url}
+                onChange={(e) => setFormData({ ...formData, repository_url: e.target.value })}
+                placeholder="https://github.com/usuario/repo"
+                disabled={isCreating}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsDialogOpen(false)}
+              disabled={isCreating}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleCreateProject}
+              disabled={isCreating || !formData.name.trim() || !formData.team_id}
+              className="bg-purple-600 hover:bg-purple-700 text-white"
+            >
+              {isCreating ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Creando...
+                </>
+              ) : (
+                'Crear Proyecto'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Footer />
     </div>
