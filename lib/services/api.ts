@@ -199,8 +199,8 @@ const responseErrorInterceptor = async (error: any) => {
       // NO hacer logout por errores de red o timeouts
       if (isAuthError && typeof window !== 'undefined') {
         console.log('🚪 [API] Refresh token invalid/expired, logging out...')
-        localStorage.removeItem('persist:root')
-        window.location.href = '/auth/admin-login'
+        // localStorage.removeItem('persist:root')
+        // window.location.href = '/auth/admin-login'
       } else if (isNetworkError) {
         console.warn('⚠️ [API] Network error during token refresh, keeping session active')
         // No hacer logout, solo rechazar la petición original

@@ -67,9 +67,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (isAuthError) {
           console.log('🚪 [AuthProvider] Authentication error, logging out')
-          dispatch(logoutLocal())
-          await persistor.purge()
-          router.push('/auth/admin-login')
+          // dispatch(logoutLocal())
+          // await persistor.purge()
+          // router.push('/auth/admin-login')
         } else {
           console.warn('⚠️ [AuthProvider] Validation failed but keeping session (likely network error)')
         }

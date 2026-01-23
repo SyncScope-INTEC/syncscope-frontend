@@ -265,8 +265,9 @@ const authSlice = createSlice({
       .addCase(logout.fulfilled, () => {
         return initialState
       })
-      .addCase(logout.rejected, () => {
-        return initialState
+      .addCase(logout.rejected, (state) => {
+        state.loading = false
+        state.error = 'Error al cerrar sesión'
       })
 
     // Verify Token
@@ -279,8 +280,9 @@ const authSlice = createSlice({
         state.user = action.payload.user
         state.isAuthenticated = true
       })
-      .addCase(verifyToken.rejected, () => {
-        return initialState
+      .addCase(verifyToken.rejected, (state, action) => {
+        state.loading = false
+        state.error = action.payload as string
       })
 
     // Refresh Access Token
@@ -294,8 +296,9 @@ const authSlice = createSlice({
         state.tokenExpiresAt = Date.now() + 60 * 60 * 1000
         state.lastActivity = Date.now()
       })
-      .addCase(refreshAccessToken.rejected, () => {
-        return initialState
+      .addCase(refreshAccessToken.rejected, (state, action) => {
+        state.loading = false
+        state.error = action.payload as string
       })
 
     // Validate Session
@@ -311,8 +314,9 @@ const authSlice = createSlice({
         }
         state.lastActivity = Date.now()
       })
-      .addCase(validateSession.rejected, () => {
-        return initialState
+      .addCase(validateSession.rejected, (state, action) => {
+        state.loading = false
+        state.error = action.payload as string
       })
 
     // Fetch User Profile Image
