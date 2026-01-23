@@ -52,13 +52,21 @@ export function AppHeader() {
   }, [user])
 
   // Fetch profile image once when component mounts
+  // Fetch profile image once when component mounts
   useEffect(() => {
-    if (user?.id && !imageLoadedRef.current && !user.profileImageUrl) {
+    // Si ya tiene imagen, marcar como cargado
+    if (user?.profileImageUrl) {
+      imageLoadedRef.current = true
+      return
+    }
+
+    // Solo intentar si tenemos ID, no hemos cargado, y no hay imagen
+    if (user?.id && !imageLoadedRef.current) {
       console.log('🖼️ [AppHeader] Fetching profile image for user:', user.id)
       imageLoadedRef.current = true
       dispatch(fetchUserProfileImage(user.id))
     }
-  }, [user?.id, dispatch])
+  }, [user?.id, user?.profileImageUrl, dispatch])
 
   // Cerrar dropdowns cuando se hace click afuera
   useEffect(() => {

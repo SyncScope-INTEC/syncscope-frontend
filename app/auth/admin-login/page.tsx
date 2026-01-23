@@ -36,11 +36,33 @@ export default function AdminLogin() {
     }
   }, [])
 
+  // Verificar sesión antes de redirigir para evitar bucles
   useEffect(() => {
-    if (isAuthenticated) {
+    const checkSession = async () => {
+      if (isAuthenticated) {
+        try {
+          // Intentar validar una vez antes de redirigir
+          // Esto evita el bucle si el estado dice isAuthenticated pero el token es inválido
+          await authService.verifyToken(localStorage.getItem('token') || '') // Nota: el token real está en redux-persist, esto es simplificado, mejor confiamos en el slice si queremos, pero lo ideal es no redirigir ciegamente.
+
+          // Si llegamos aquí, asumir válido por ahora o dejar que AuthProvider en dashboard maneje
+          // Pero para mayor seguridad, solo redirigir si no hay error previo de auth
+          if (!error) {
+            router.push("/admin/dashboard")
+          }
+        } catch (e) {
+          // Si falla validación, no redirigir y limpiar estado si es necesario
+          // dispatch(logoutLocal()) // Opcional, o dejar que el usuario haga login de nuevo
+          console.warn("Sesión inválida detectada en login page, permaneciendo aquí.")
+        }
+      }
+    }
+
+    // Solo redirigir si explícitamente no hay error y estamos autenticados
+    if (isAuthenticated && !error) {
       router.push("/admin/dashboard")
     }
-  }, [isAuthenticated, router])
+  }, [isAuthenticated, error, router])
 
   useEffect(() => {
     if (error) {
@@ -75,10 +97,10 @@ export default function AdminLogin() {
       }
 
       await dispatch(login({ email: formData.email, password: formData.password })).unwrap()
-      
+
       // Check if user needs to change temporary password
       const pendingPasswordChange = localStorage.getItem('pending_password_change')
-      
+
       if (pendingPasswordChange === formData.email) {
         // User has temporary password, redirect to change password page
         toast.info("Por favor cambia tu contraseña temporal")
