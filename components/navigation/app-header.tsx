@@ -31,11 +31,11 @@ export function AppHeader() {
       try {
         const alertsData = await alertsService.getAllAlerts()
         const activeAlerts = alertsData?.results?.filter(
-          (alert: any) => !alert.is_resolved && !alert.is_muted
+          (alert: any) => !alert.is_resolved && !alert.is_muted && !alert.is_acknowledged
         ) || []
 
         setAlerts(activeAlerts)
-        setUnreadCount(activeAlerts.filter((a: any) => !a.is_acknowledged).length)
+        setUnreadCount(activeAlerts.filter((a: any) => !a.is_read).length)
       } catch (error) {
         console.error('Error fetching alerts:', error)
         setAlerts([])

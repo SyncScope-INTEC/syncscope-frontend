@@ -18,10 +18,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Plus, Users, GitBranch, ExternalLink, Loader2 } from "lucide-react"
+import { Github, Gitlab } from "lucide-react"
 import { useAppSelector } from "@/lib/store/hooks"
 import { managementService } from "@/lib/services/managementService"
 import { toast } from "sonner"
 import { translateApiError } from "@/lib/utils/error-translator"
+import { validateRepositoryUrl, getRepositoryProvider, type RepositoryProvider } from "@/lib/utils/repository"
 
 interface Team {
   id: string
@@ -87,6 +89,15 @@ export default function ProjectsPage() {
       return
     }
 
+    // Validate repository URL if provided
+    if (formData.repository_url) {
+      const validation = validateRepositoryUrl(formData.repository_url)
+      if (!validation.isValid) {
+        toast.error(validation.error || 'URL de repositorio inválida')
+        return
+      }
+    }
+
     setIsCreating(true)
     try {
       const newProject = await managementService.createProject({
@@ -96,6 +107,18 @@ export default function ProjectsPage() {
         repository_url: formData.repository_url || undefined,
         url: formData.url || undefined,
       })
+
+      // Auto-add the admin user as owner
+      try {
+        await managementService.addProjectMember({
+          project: newProject.id,
+          user_id: user?.id || '',
+          role: 'owner',
+        })
+      } catch (memberError) {
+        console.error('Error adding admin as owner:', memberError)
+        // Don't fail the whole operation if this fails
+      }
 
       toast.success('¡Proyecto creado exitosamente!')
 
@@ -179,19 +202,24 @@ export default function ProjectsPage() {
                       {project.team_name}
                     </div>
                   )}
-                  {project.repository_url && (
-                    <div className="flex items-center text-sm text-gray-600">
-                      <GitBranch className="w-4 h-4 mr-2" />
-                      <a
-                        href={project.repository_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="hover:text-purple-600 truncate"
-                      >
-                        {project.repository_url.split('/').slice(-2).join('/')}
-                      </a>
-                    </div>
-                  )}
+                  {project.repository_url && (() => {
+                    const provider = getRepositoryProvider(project.repository_url)
+                    const ProviderIcon = provider === 'github' ? Github : provider === 'gitlab' ? Gitlab : GitBranch
+                    return (
+                      <div className="flex items-center text-sm text-gray-600">
+                        <ProviderIcon className="w-4 h-4 mr-2" />
+                        <a
+                          href={project.repository_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:text-purple-600 truncate flex items-center gap-1"
+                        >
+                          {project.repository_url.split('/').slice(-2).join('/')}
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      </div>
+                    )
+                  })()}
                   {project.url && (
                     <div className="flex items-center text-sm text-gray-600">
                       <ExternalLink className="w-4 h-4 mr-2" />
@@ -324,7 +352,7 @@ export default function ProjectsPage() {
             </div>
 
             <div>
-              <Label htmlFor="repository_url">URL del Repositorio</Label>
+              <Label htmlFor="repository_url">URL del Repositorio (GitHub o GitLab)</Label>
               <Input
                 id="repository_url"
                 type="url"
@@ -333,6 +361,7 @@ export default function ProjectsPage() {
                 placeholder="https://github.com/usuario/repo"
                 disabled={isCreating}
               />
+              <p className="text-xs text-gray-500 mt-1">Solo se permiten URLs de GitHub o GitLab</p>
             </div>
           </div>
 

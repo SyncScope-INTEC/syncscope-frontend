@@ -11,6 +11,7 @@ import { managementService } from '@/lib/services/managementService'
 import { authService } from '@/lib/services/authService'
 import { toast } from 'sonner'
 import { translateApiError } from '@/lib/utils/error-translator'
+import { validateRepositoryUrl } from '@/lib/utils/repository'
 import { Rocket, FolderPlus, Users, CheckCircle, Loader2, Mail, X } from 'lucide-react'
 
 type OnboardingStep = 1 | 2 | 3
@@ -53,6 +54,14 @@ export function AdminOnboarding() {
     if (!projectData.name.trim() || !projectData.team_name.trim()) {
       toast.error('Por favor completa los campos requeridos')
       return
+    }
+
+    if (projectData.git_repository_url) {
+      const validation = validateRepositoryUrl(projectData.git_repository_url)
+      if (!validation.isValid) {
+        toast.error(validation.error || 'URL de repositorio inválida')
+        return
+      }
     }
 
     setLoading(true)

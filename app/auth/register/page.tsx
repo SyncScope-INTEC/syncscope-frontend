@@ -108,7 +108,7 @@ export default function RegisterPage() {
     try {
       await dispatch(register(formData)).unwrap()
       toast.success("¡Cuenta creada exitosamente!")
-      router.push("/admin/dashboard")
+      // Don't manually redirect - let the useEffect handle it when isAuthenticated becomes true
     } catch (_err) {
       // El error ya se maneja en el useEffect
     }
