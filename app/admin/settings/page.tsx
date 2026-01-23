@@ -10,9 +10,22 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Users, Mail, FolderKanban, Loader2, X } from 'lucide-react'
+import { Users, Mail, FolderKanban, Loader2, X, Plus, GitBranch, ExternalLink } from 'lucide-react'
+import { Github, Gitlab } from 'lucide-react'
 import { authService } from '@/lib/services/authService'
+import { managementService } from '@/lib/services/managementService'
 import { getPlanLimit } from '@/lib/utils/planLimits'
+import { translateApiError } from '@/lib/utils/error-translator'
+import { validateRepositoryUrl, getRepositoryProvider } from '@/lib/utils/repository'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Textarea } from '@/components/ui/textarea'
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('users')
@@ -27,26 +40,39 @@ export default function SettingsPage() {
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviteRole, setInviteRole] = useState<'developer' | 'supervisor'>('developer')
 
+  // Projects state
+  const [projects, setProjects] = useState<any[]>([])
+  const [teams, setTeams] = useState<any[]>([])
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isCreating, setIsCreating] = useState(false)
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    team_id: '',
+    repository_url: '',
+    url: '',
+  })
+
   // Fetch data
   const fetchData = async () => {
     try {
       setLoading(true)
-      const [usersData, invitationsData] = await Promise.all([
-        authService.getSupervisedUsers(), // Using this as proxy for company users for now
-        authService.getInvitations()
+      const [usersData, invitationsData, projectsData, teamsData] = await Promise.all([
+        authService.getSupervisedUsers(),
+        authService.getInvitations(),
+        managementService.getAllProjects({ company: user?.company?.id }),
+        managementService.getAllTeams(),
       ])
 
-      // Transform supervised users to flat list if needed, depending on API response structure
-      // Assuming headers getSupervisedUsers returns list of supervision objects
       const mappedUsers = (usersData?.map((s: any) => s.supervisee) || []).filter(Boolean)
-
-      // Add current user if not in list
       if (user && !mappedUsers.find((u: any) => u.id === user.id)) {
         mappedUsers.unshift(user)
       }
 
       setUsers(mappedUsers)
       setInvitations(invitationsData || [])
+      setProjects(projectsData?.results || [])
+      setTeams(teamsData?.results || [])
     } catch (error) {
       console.error('Error fetching settings data:', error)
       toast.error('Error al cargar datos')
@@ -108,6 +134,57 @@ export default function SettingsPage() {
       fetchData()
     } catch (error) {
       toast.error('Error al cancelar')
+    }
+  }
+
+  const handleCreateProject = async () => {
+    if (!formData.name.trim()) {
+      toast.error('El nombre del proyecto es requerido')
+      return
+    }
+
+    if (!formData.team_id) {
+      toast.error('Debes seleccionar un equipo')
+      return
+    }
+
+    if (formData.repository_url) {
+      const validation = validateRepositoryUrl(formData.repository_url)
+      if (!validation.isValid) {
+        toast.error(validation.error || 'URL de repositorio inválida')
+        return
+      }
+    }
+
+    setIsCreating(true)
+    try {
+      const newProject = await managementService.createProject({
+        name: formData.name,
+        description: formData.description || undefined,
+        team_id: formData.team_id,
+        repository_url: formData.repository_url || undefined,
+        url: formData.url || undefined,
+      })
+
+      try {
+        await managementService.addProjectMember({
+          project: newProject.id,
+          user_id: user?.id || '',
+          role: 'owner',
+        })
+      } catch (memberError) {
+        console.error('Error adding admin as owner:', memberError)
+      }
+
+      toast.success('¡Proyecto creado exitosamente!')
+      setProjects([newProject, ...projects])
+      setIsDialogOpen(false)
+      setFormData({ name: '', description: '', team_id: '', repository_url: '', url: '' })
+    } catch (error: any) {
+      const errorMessage = translateApiError(error)
+      toast.error(errorMessage)
+    } finally {
+      setIsCreating(false)
     }
   }
 
@@ -278,22 +355,173 @@ export default function SettingsPage() {
                   <div>
                     <h2 className="text-xl font-semibold text-gray-900">Proyectos</h2>
                     <p className="text-sm text-gray-600 mt-1">
-                      Gestiona los proyectos de tu empresa
+                      Gestiona los proyectos de tu empresa ({projects.length} proyectos)
                     </p>
                   </div>
-                  <Button className="bg-purple-600 hover:bg-purple-700">
-                    <FolderKanban className="w-4 h-4 mr-2" />
-                    Crear proyecto
+                  <Button
+                    onClick={() => setIsDialogOpen(true)}
+                    className="bg-purple-600 hover:bg-purple-700"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Nuevo Proyecto
                   </Button>
                 </div>
 
-                <div className="text-center py-12 text-gray-500">
-                  <FolderKanban className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>Lista de proyectos próximamente...</p>
-                </div>
+                {projects.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {projects.map((project) => (
+                      <Card key={project.id} className="p-4 hover:shadow-md transition-shadow">
+                        <div className="space-y-3">
+                          <div>
+                            <h3 className="font-semibold text-gray-900">{project.name}</h3>
+                            {project.description && (
+                              <p className="text-sm text-gray-600 mt-1 line-clamp-2">{project.description}</p>
+                            )}
+                          </div>
+
+                          <div className="space-y-2">
+                            {project.team_name && (
+                              <div className="flex items-center text-sm text-gray-600">
+                                <Users className="w-4 h-4 mr-2" />
+                                {project.team_name}
+                              </div>
+                            )}
+                            {project.repository_url && (() => {
+                              const provider = getRepositoryProvider(project.repository_url)
+                              const ProviderIcon = provider === 'github' ? Github : provider === 'gitlab' ? Gitlab : GitBranch
+                              return (
+                                <div className="flex items-center text-sm text-gray-600">
+                                  <ProviderIcon className="w-4 h-4 mr-2" />
+                                  <a
+                                    href={project.repository_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="hover:text-purple-600 truncate flex items-center gap-1"
+                                  >
+                                    {project.repository_url.split('/').slice(-2).join('/')}
+                                    <ExternalLink className="w-3 h-3" />
+                                  </a>
+                                </div>
+                              )
+                            })()}
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 text-gray-500">
+                    <FolderKanban className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <p>No hay proyectos creados</p>
+                    <p className="text-sm mt-2">Crea tu primer proyecto para comenzar</p>
+                  </div>
+                )}
               </Card>
             </TabsContent>
           </Tabs>
+
+          {/* Project Creation Dialog */}
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogContent className="sm:max-w-[600px]">
+              <DialogHeader>
+                <DialogTitle>Crear Nuevo Proyecto</DialogTitle>
+                <DialogDescription>
+                  Completa la información del proyecto
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="name">Nombre *</Label>
+                    <Input
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      placeholder="Mi Proyecto"
+                      disabled={isCreating}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="team">Equipo *</Label>
+                    <select
+                      id="team"
+                      value={formData.team_id}
+                      onChange={(e) => setFormData({ ...formData, team_id: e.target.value })}
+                      disabled={isCreating}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <option value="">Seleccionar equipo...</option>
+                      {teams.map((team) => (
+                        <option key={team.id} value={team.id}>{team.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="description">Descripción</Label>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    placeholder="Descripción del proyecto..."
+                    disabled={isCreating}
+                    rows={3}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="url">URL del Proyecto</Label>
+                  <Input
+                    id="url"
+                    type="url"
+                    value={formData.url}
+                    onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+                    placeholder="https://miproyecto.com"
+                    disabled={isCreating}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="repository_url">URL del Repositorio (GitHub o GitLab)</Label>
+                  <Input
+                    id="repository_url"
+                    type="url"
+                    value={formData.repository_url}
+                    onChange={(e) => setFormData({ ...formData, repository_url: e.target.value })}
+                    placeholder="https://github.com/usuario/repo"
+                    disabled={isCreating}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Solo se permiten URLs de GitHub o GitLab</p>
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsDialogOpen(false)}
+                  disabled={isCreating}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  onClick={handleCreateProject}
+                  disabled={isCreating || !formData.name || !formData.team_id}
+                  className="bg-purple-600 hover:bg-purple-700"
+                >
+                  {isCreating ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Creando...
+                    </>
+                  ) : (
+                    'Crear Proyecto'
+                  )}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </main>
       </div>
     </>

@@ -246,8 +246,8 @@ export default function AdminDashboard() {
                 <div className="space-y-6">
                   {/* Current Status */}
                   <Card className="border-2 border-purple-200">
-                    <CardContent className="p-6">
-                      <h3 className="font-bold text-gray-900 mb-4">Estado actual</h3>
+                    <CardContent className="p-6 pt-0">
+                      <h3 className="font-bold text-gray-900">Estado actual</h3>
                       <div className="flex items-center justify-center mb-4">
                         <div className="relative w-24 h-24">
                           <svg className="w-24 h-24 transform -rotate-90" viewBox="0 0 36 36">

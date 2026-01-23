@@ -3,18 +3,10 @@
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
-import { UserCheck, Clock, CheckCircle2, LogOut } from 'lucide-react'
-import { useAppDispatch } from '@/lib/store/hooks'
-import { logout } from '@/lib/store/slices/authSlice'
+import { UserCheck, Clock, CheckCircle2 } from 'lucide-react'
 
 export function SupervisorOnboarding() {
   const router = useRouter()
-  const dispatch = useAppDispatch()
-
-  const handleLogout = () => {
-    dispatch(logout())
-    router.push('/auth/admin-login')
-  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-purple-50 via-blue-50 to-purple-50 p-4">
@@ -45,7 +37,7 @@ export function SupervisorOnboarding() {
 
         <div className="space-y-4 mb-6">
           <h3 className="font-semibold text-gray-900">Mientras tanto, puedes:</h3>
-          
+
           <div className="space-y-3">
             <div className="flex items-start gap-3">
               <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
@@ -78,7 +70,7 @@ export function SupervisorOnboarding() {
 
         <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6">
           <p className="text-sm text-purple-900">
-            💡 <strong>Próximos pasos:</strong> Una vez que tengas un proyecto asignado, 
+            💡 <strong>Próximos pasos:</strong> Una vez que tengas un proyecto asignado,
             podrás supervisar a tu equipo, ver métricas de productividad y generar reportes.
           </p>
         </div>
@@ -96,14 +88,6 @@ export function SupervisorOnboarding() {
             className="flex-1 bg-purple-600 hover:bg-purple-700"
           >
             Ir al Dashboard
-          </Button>
-          <Button
-            onClick={handleLogout}
-            variant="outline"
-            className="flex items-center gap-2 border-red-300 text-red-600 hover:bg-red-50"
-          >
-            <LogOut className="w-4 h-4" />
-            Cerrar Sesión
           </Button>
         </div>
       </Card>
