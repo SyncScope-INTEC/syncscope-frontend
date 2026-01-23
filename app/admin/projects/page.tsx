@@ -55,7 +55,7 @@ export default function ProjectsPage() {
 
         // Fetch projects and teams in parallel
         const [userProjects, userTeams] = await Promise.all([
-          managementService.getUserProjects(user?.id || ''),
+          managementService.getAllProjects({ company: user?.company?.id }),
           managementService.getAllTeams(),
         ])
 

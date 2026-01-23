@@ -53,7 +53,7 @@ export default function AdminDashboard() {
           monitoringService.getUserSessionStats(user?.id || '').catch(() => null),
           monitoringService.getUserSessions(user?.id || '', { limit: 3 }).catch(() => []),
           authService.getSupervisedUsers().catch(() => []),
-          managementService.getUserProjects(user?.id || '').catch(() => ({ results: [] })), // Added this line
+          managementService.getAllProjects({ company: user?.company?.id }).catch(() => ({ results: [] })),
         ])
 
         setDashboardData(dashboard)
@@ -318,8 +318,8 @@ export default function AdminDashboard() {
                         projects.map((project, index) => (
                           <div key={project.id} className="flex items-center gap-3">
                             <div className={`w-8 h-8 rounded ${index === 0 ? 'bg-gradient-to-br from-purple-400 to-blue-500' :
-                                index === 1 ? 'bg-gradient-to-br from-purple-600 to-indigo-600' :
-                                  'bg-gradient-to-br from-indigo-500 to-purple-500'
+                              index === 1 ? 'bg-gradient-to-br from-purple-600 to-indigo-600' :
+                                'bg-gradient-to-br from-indigo-500 to-purple-500'
                               }`}></div>
                             <div>
                               <p className="font-medium text-gray-900 text-sm">

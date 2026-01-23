@@ -127,9 +127,8 @@ export function AdminOnboarding() {
 
   const handleSendInvitations = async () => {
     if (invitations.length === 0) {
-      // Skip invitations, go to dashboard
-      router.refresh()
-      router.push('/admin/dashboard')
+      // Skip invitations, go to dashboard with hard refresh
+      window.location.href = '/admin/dashboard'
       return
     }
 
@@ -159,10 +158,9 @@ export function AdminOnboarding() {
       toast.success(`${successCount} invitación(es) enviada(s) exitosamente`)
     }
 
-    // Redirect to dashboard
+    // Redirect to dashboard with hard refresh to show new projects
     setTimeout(() => {
-      router.refresh()
-      router.push('/admin/dashboard')
+      window.location.href = '/admin/dashboard'
     }, 1500)
   }
 
