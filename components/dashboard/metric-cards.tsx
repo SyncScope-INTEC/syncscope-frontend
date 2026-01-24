@@ -27,31 +27,31 @@ export function MetricCards({ metrics }: MetricCardsProps) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-      {/* Coding Time Today */}
+      {/* Complexity Score */}
       <Card className="border-2 border-purple-200 hover:border-purple-400 transition-colors">
         <CardContent className="p-6">
           <div className="flex items-center justify-between mb-2">
-            <Clock className="w-5 h-5 text-purple-600" />
-            <span className="text-xs text-gray-500">Hoy</span>
+            <TrendingUp className="w-5 h-5 text-purple-600" />
+            <span className="text-xs text-gray-500">Promedio</span>
           </div>
           <div className="text-2xl font-bold text-gray-900">
-            {formatDuration(codingTime.today)}
+            {codeMetrics.avgComplexity.toFixed(1)}
           </div>
-          <p className="text-xs text-gray-600 mt-1">Tiempo de código</p>
+          <p className="text-xs text-gray-600 mt-1">Complejidad</p>
         </CardContent>
       </Card>
 
-      {/* Coding Time This Week */}
+      {/* Total Functions */}
       <Card className="border-2 border-blue-200 hover:border-blue-400 transition-colors">
         <CardContent className="p-6">
           <div className="flex items-center justify-between mb-2">
-            <Clock className="w-5 h-5 text-blue-600" />
-            <span className="text-xs text-gray-500">Semana</span>
+            <Code className="w-5 h-5 text-blue-600" />
+            <span className="text-xs text-gray-500">Total</span>
           </div>
           <div className="text-2xl font-bold text-gray-900">
-            {formatDuration(codingTime.thisWeek)}
+            {codeMetrics.totalFunctions.toLocaleString()}
           </div>
-          <p className="text-xs text-gray-600 mt-1">Tiempo de código</p>
+          <p className="text-xs text-gray-600 mt-1">Funciones</p>
         </CardContent>
       </Card>
 
@@ -74,26 +74,26 @@ export function MetricCards({ metrics }: MetricCardsProps) {
         <CardContent className="p-6">
           <div className="flex items-center justify-between mb-2">
             <Code className="w-5 h-5 text-orange-600" />
-            <span className="text-xs text-gray-500">Semana</span>
+            <span className="text-xs text-gray-500">Total</span>
           </div>
           <div className="text-2xl font-bold text-gray-900">
-            {codeMetrics.linesAdded.toLocaleString()}
+            {codeMetrics.totalLines.toLocaleString()}
           </div>
-          <p className="text-xs text-gray-600 mt-1">Líneas escritas</p>
+          <p className="text-xs text-gray-600 mt-1">Líneas de código</p>
         </CardContent>
       </Card>
 
-      {/* Average Session Duration */}
+      {/* Total Classes */}
       <Card className="border-2 border-indigo-200 hover:border-indigo-400 transition-colors">
         <CardContent className="p-6">
           <div className="flex items-center justify-between mb-2">
-            <TrendingUp className="w-5 h-5 text-indigo-600" />
-            <span className="text-xs text-gray-500">Promedio</span>
+            <Users className="w-5 h-5 text-indigo-600" />
+            <span className="text-xs text-gray-500">Total</span>
           </div>
           <div className="text-2xl font-bold text-gray-900">
-            {formatDuration(avgSessionDuration)}
+            {codeMetrics.totalClasses.toLocaleString()}
           </div>
-          <p className="text-xs text-gray-600 mt-1">Duración sesión</p>
+          <p className="text-xs text-gray-600 mt-1">Clases</p>
         </CardContent>
       </Card>
     </div>

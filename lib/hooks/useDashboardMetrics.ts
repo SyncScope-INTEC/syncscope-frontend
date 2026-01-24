@@ -92,24 +92,33 @@ export function useDashboardMetrics(projectId: string | null) {
         const teamSessionsArrays = await Promise.all(teamSessionsPromises)
         const allSessions: Session[] = teamSessionsArrays.flat()
 
+        console.log('📊 [useDashboardMetrics] All sessions:', allSessions)
+
         // 4. Fetch code metrics for the project (all team members)
         const codeMetricsResponse = await monitoringService
           .getAllCodeMetrics({
             project_id: projectId,
-            start_date: weekRange.start_date,
-            end_date: weekRange.end_date,
           })
-          .catch(() => [])
+          .catch(() => ({ results: [] }))
 
-        const codeMetricsList: CodeMetric[] = Array.isArray(codeMetricsResponse)
-          ? codeMetricsResponse
-          : []
+        console.log('📊 [useDashboardMetrics] Code metrics response:', codeMetricsResponse)
+
+        const codeMetricsList: CodeMetric[] = codeMetricsResponse?.results || []
+
+        console.log('📊 [useDashboardMetrics] Code metrics list:', codeMetricsList)
 
         // 5. Calculate aggregated metrics
         const codingTime = calculateCodingTime(allSessions)
         const activeSessions = countActiveSessions(allSessions)
         const avgSessionDuration = calculateAverageSessionDuration(allSessions)
         const codeMetrics = aggregateCodeMetrics(codeMetricsList)
+
+        console.log('📊 [useDashboardMetrics] Calculated metrics:', {
+          codingTime,
+          activeSessions,
+          avgSessionDuration,
+          codeMetrics
+        })
 
         // 6. Update state with calculated metrics
         setMetrics({

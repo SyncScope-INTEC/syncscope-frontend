@@ -22,7 +22,6 @@ export const monitoringService = {
 
   // Code Metrics
   getAllCodeMetrics: async (params?: {
-    start_date?: string
     end_date?: string
     project_id?: string
     user_id?: string

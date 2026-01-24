@@ -45,10 +45,29 @@ export function calculateCodingTime(sessions: Session[]): {
   const weekSessions = sessions.filter(s => new Date(s.session_start) >= weekStart)
   const monthSessions = sessions.filter(s => new Date(s.session_start) >= monthStart)
 
+  // Helper function to get session duration (including active sessions)
+  const getSessionDuration = (session: Session): number => {
+    // If session has a recorded duration, use it
+    if (session.session_duration_minutes && session.session_duration_minutes > 0) {
+      return session.session_duration_minutes
+    }
+
+    // If session is active (no end time), calculate duration from start to now
+    if (!session.session_end && session.session_start) {
+      const startTime = new Date(session.session_start).getTime()
+      const currentTime = now.getTime()
+      const durationMs = currentTime - startTime
+      const durationMinutes = Math.floor(durationMs / (1000 * 60))
+      return durationMinutes > 0 ? durationMinutes : 0
+    }
+
+    return 0
+  }
+
   return {
-    today: todaySessions.reduce((sum, s) => sum + (s.session_duration_minutes || 0), 0),
-    thisWeek: weekSessions.reduce((sum, s) => sum + (s.session_duration_minutes || 0), 0),
-    thisMonth: monthSessions.reduce((sum, s) => sum + (s.session_duration_minutes || 0), 0),
+    today: todaySessions.reduce((sum, s) => sum + getSessionDuration(s), 0),
+    thisWeek: weekSessions.reduce((sum, s) => sum + getSessionDuration(s), 0),
+    thisMonth: monthSessions.reduce((sum, s) => sum + getSessionDuration(s), 0),
   }
 }
 
@@ -64,9 +83,9 @@ export function countActiveSessions(sessions: Session[]): number {
  */
 export function calculateAverageSessionDuration(sessions: Session[]): number {
   const completedSessions = sessions.filter(s => s.session_end && s.session_duration_minutes > 0)
-  
+
   if (completedSessions.length === 0) return 0
-  
+
   const totalDuration = completedSessions.reduce((sum, s) => sum + s.session_duration_minutes, 0)
   return Math.round(totalDuration / completedSessions.length)
 }
@@ -135,14 +154,14 @@ export function formatDuration(minutes: number): string {
   if (minutes < 60) {
     return `${minutes}m`
   }
-  
+
   const hours = Math.floor(minutes / 60)
   const mins = minutes % 60
-  
+
   if (mins === 0) {
     return `${hours}h`
   }
-  
+
   return `${hours}h ${mins}m`
 }
 
@@ -155,9 +174,9 @@ export function getDateRange(range: 'today' | 'week' | 'month'): {
 } {
   const now = new Date()
   const end_date = now.toISOString()
-  
+
   let start_date: Date
-  
+
   switch (range) {
     case 'today':
       start_date = new Date(now.getFullYear(), now.getMonth(), now.getDate())
@@ -169,7 +188,7 @@ export function getDateRange(range: 'today' | 'week' | 'month'): {
       start_date = new Date(now.getFullYear(), now.getMonth(), 1)
       break
   }
-  
+
   return {
     start_date: start_date.toISOString(),
     end_date,
@@ -188,17 +207,17 @@ export function calculateProductivityTrend(
 } {
   const currentLines = currentWeekMetrics.reduce((sum, m) => sum + m.lines_added, 0)
   const previousLines = previousWeekMetrics.reduce((sum, m) => sum + m.lines_added, 0)
-  
+
   if (previousLines === 0) {
     return { percentageChange: 0, trend: 'stable' }
   }
-  
+
   const percentageChange = Math.round(((currentLines - previousLines) / previousLines) * 100)
-  
+
   let trend: 'up' | 'down' | 'stable'
   if (percentageChange > 5) trend = 'up'
   else if (percentageChange < -5) trend = 'down'
   else trend = 'stable'
-  
+
   return { percentageChange, trend }
 }
