@@ -26,6 +26,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
+import { Checkbox } from '@/components/ui/checkbox'
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('users')
@@ -52,6 +53,16 @@ export default function SettingsPage() {
     repository_url: '',
     url: '',
   })
+
+  // Member management state
+  const [selectedProject, setSelectedProject] = useState<any>(null)
+  const [isMembersDialogOpen, setIsMembersDialogOpen] = useState(false)
+  const [membersTab, setMembersTab] = useState('members')
+  const [projectMembers, setProjectMembers] = useState<any[]>([])
+  const [projectInvitations, setProjectInvitations] = useState<any[]>([])
+  const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set())
+  const [invitationRole, setInvitationRole] = useState<'developer' | 'supervisor'>('developer')
+  const [isInviting, setIsInviting] = useState(false)
 
   // Fetch data
   const fetchData = async () => {
@@ -185,6 +196,98 @@ export default function SettingsPage() {
       toast.error(errorMessage)
     } finally {
       setIsCreating(false)
+    }
+  }
+
+  // Member Management Functions
+  const handleOpenMembersDialog = async (project: any) => {
+    setSelectedProject(project)
+    setIsMembersDialogOpen(true)
+    setMembersTab('members')
+    await fetchProjectMembers(project.id)
+    await fetchProjectInvitations(project.id)
+  }
+
+  const fetchProjectMembers = async (projectId: string) => {
+    try {
+      const response = await managementService.getAllProjectMembers({ page: 1 })
+      // Filter members for this specific project
+      const members = response.results?.filter((m: any) => m.project === projectId) || []
+      setProjectMembers(members)
+    } catch (error) {
+      console.error('Error fetching project members:', error)
+      toast.error('Error al cargar miembros')
+    }
+  }
+
+  const fetchProjectInvitations = async (projectId: string) => {
+    try {
+      const invitations = await managementService.getProjectInvitations({ project: projectId })
+      setProjectInvitations(invitations || [])
+    } catch (error) {
+      console.error('Error fetching invitations:', error)
+      toast.error('Error al cargar invitaciones')
+    }
+  }
+
+  const handleToggleUserSelection = (userId: string) => {
+    const newSelection = new Set(selectedUsers)
+    if (newSelection.has(userId)) {
+      newSelection.delete(userId)
+    } else {
+      newSelection.add(userId)
+    }
+    setSelectedUsers(newSelection)
+  }
+
+  const handleInviteUsers = async () => {
+    if (selectedUsers.size === 0) {
+      toast.error('Selecciona al menos un usuario')
+      return
+    }
+
+    setIsInviting(true)
+    let successCount = 0
+    let errorCount = 0
+
+    for (const userId of selectedUsers) {
+      const selectedUser = users.find(u => u.id === userId)
+      if (!selectedUser) continue
+
+      try {
+        await managementService.sendProjectInvitation({
+          project_id: selectedProject.id,
+          invitee_email: selectedUser.email,
+          role: invitationRole,
+        })
+        successCount++
+      } catch (error: any) {
+        errorCount++
+        console.error(`Error inviting ${selectedUser.email}:`, error)
+      }
+    }
+
+    setIsInviting(false)
+    setSelectedUsers(new Set())
+
+    if (successCount > 0) {
+      toast.success(`${successCount} invitación(es) enviada(s) exitosamente`)
+      await fetchProjectInvitations(selectedProject.id)
+      setMembersTab('pending')
+    }
+
+    if (errorCount > 0) {
+      toast.error(`${errorCount} invitación(es) fallaron`)
+    }
+  }
+
+  const handleCancelProjectInvitation = async (invitationId: string) => {
+    try {
+      await managementService.cancelProjectInvitation(invitationId)
+      toast.success('Invitación cancelada')
+      await fetchProjectInvitations(selectedProject.id)
+    } catch (error) {
+      toast.error('Error al cancelar invitación')
     }
   }
 
@@ -405,6 +508,16 @@ export default function SettingsPage() {
                               )
                             })()}
                           </div>
+
+                          <Button
+                            onClick={() => handleOpenMembersDialog(project)}
+                            variant="outline"
+                            size="sm"
+                            className="w-full mt-2"
+                          >
+                            <Users className="w-4 h-4 mr-2" />
+                            Gestionar Miembros
+                          </Button>
                         </div>
                       </Card>
                     ))}
@@ -520,6 +633,145 @@ export default function SettingsPage() {
                   )}
                 </Button>
               </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* Member Management Dialog */}
+          <Dialog open={isMembersDialogOpen} onOpenChange={setIsMembersDialogOpen}>
+            <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Gestionar Miembros - {selectedProject?.name}</DialogTitle>
+                <DialogDescription>
+                  Administra los miembros e invitaciones del proyecto
+                </DialogDescription>
+              </DialogHeader>
+
+              <Tabs value={membersTab} onValueChange={setMembersTab} className="mt-4">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="members">Miembros Actuales</TabsTrigger>
+                  <TabsTrigger value="invite">Invitar Usuarios</TabsTrigger>
+                  <TabsTrigger value="pending">Invitaciones Pendientes</TabsTrigger>
+                </TabsList>
+
+                {/* Tab 1: Current Members */}
+                <TabsContent value="members" className="space-y-4">
+                  {projectMembers.length > 0 ? (
+                    <div className="space-y-2">
+                      {projectMembers.map((member) => (
+                        <div key={member.id} className="flex items-center justify-between p-3 border rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 font-bold">
+                              {member.user_email?.[0]?.toUpperCase() || 'U'}
+                            </div>
+                            <div>
+                              <p className="font-medium">{member.user_email}</p>
+                              <Badge variant="outline" className="text-xs">{member.role}</Badge>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                      <p>No hay miembros en este proyecto</p>
+                    </div>
+                  )}
+                </TabsContent>
+
+                {/* Tab 2: Invite Users */}
+                <TabsContent value="invite" className="space-y-4">
+                  <div className="mb-4">
+                    <Label>Rol para los usuarios invitados</Label>
+                    <select
+                      value={invitationRole}
+                      onChange={(e) => setInvitationRole(e.target.value as 'developer' | 'supervisor')}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm mt-1"
+                    >
+                      <option value="developer">Developer</option>
+                      <option value="supervisor">Supervisor</option>
+                    </select>
+                  </div>
+
+                  {users.filter(u => !projectMembers.some(m => m.user_id === u.id)).length > 0 ? (
+                    <div className="space-y-2">
+                      {users
+                        .filter(u => !projectMembers.some(m => m.user_id === u.id))
+                        .map((user) => (
+                          <div key={user.id} className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50">
+                            <Checkbox
+                              checked={selectedUsers.has(user.id)}
+                              onCheckedChange={() => handleToggleUserSelection(user.id)}
+                            />
+                            <div className="flex-1">
+                              <p className="font-medium">{user.first_name} {user.last_name}</p>
+                              <p className="text-sm text-gray-500">{user.email}</p>
+                            </div>
+                            <Badge variant="outline">{user.role}</Badge>
+                          </div>
+                        ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                      <p>Todos los usuarios ya son miembros del proyecto</p>
+                    </div>
+                  )}
+
+                  {selectedUsers.size > 0 && (
+                    <Button
+                      onClick={handleInviteUsers}
+                      disabled={isInviting}
+                      className="w-full bg-purple-600 hover:bg-purple-700"
+                    >
+                      {isInviting ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Enviando...
+                        </>
+                      ) : (
+                        <>
+                          <Mail className="w-4 h-4 mr-2" />
+                          Enviar {selectedUsers.size} Invitación(es)
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </TabsContent>
+
+                {/* Tab 3: Pending Invitations */}
+                <TabsContent value="pending" className="space-y-4">
+                  {projectInvitations.length > 0 ? (
+                    <div className="space-y-2">
+                      {projectInvitations.map((invitation) => (
+                        <div key={invitation.id} className="flex items-center justify-between p-3 border rounded-lg">
+                          <div className="flex-1">
+                            <p className="font-medium">{invitation.invitee_email}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Badge variant="outline" className="text-xs">{invitation.role}</Badge>
+                              <span className="text-xs text-gray-500">
+                                Expira: {new Date(invitation.expires_at).toLocaleDateString()}
+                              </span>
+                            </div>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleCancelProjectInvitation(invitation.id)}
+                          >
+                            <X className="w-4 h-4 text-red-500" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <Mail className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                      <p>No hay invitaciones pendientes</p>
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
             </DialogContent>
           </Dialog>
         </main>

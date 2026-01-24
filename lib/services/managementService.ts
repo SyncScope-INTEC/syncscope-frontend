@@ -72,6 +72,30 @@ export const managementService = {
     return response.data
   },
 
+  // Project Invitations
+  getProjectInvitations: async (params?: {
+    project?: string
+    sent_by_me?: boolean
+    status?: 'pending' | 'accepted' | 'expired'
+  }) => {
+    const response = await api.get('/management/project-invitations/', { params })
+    return response.data
+  },
+
+  sendProjectInvitation: async (data: {
+    project_id: string
+    invitee_email: string
+    role: 'developer' | 'supervisor'
+  }) => {
+    const response = await api.post('/management/project-invitations/', data)
+    return response.data
+  },
+
+  cancelProjectInvitation: async (id: string) => {
+    const response = await api.delete(`/management/project-invitations/${id}/`)
+    return response.data
+  },
+
   // Teams CRUD
   getAllTeams: async (params?: { page?: number }) => {
     const response = await api.get('/management/teams/', { params })
