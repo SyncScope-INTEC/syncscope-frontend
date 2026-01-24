@@ -96,6 +96,16 @@ export const managementService = {
     return response.data
   },
 
+  validateProjectInvitation: async (token: string) => {
+    const response = await api.get('/management/project-invitations/accept/', { params: { token } })
+    return response.data
+  },
+
+  acceptProjectInvitation: async (token: string) => {
+    const response = await api.post('/management/project-invitations/accept/', { token })
+    return response.data
+  },
+
   // Teams CRUD
   getAllTeams: async (params?: { page?: number }) => {
     const response = await api.get('/management/teams/', { params })

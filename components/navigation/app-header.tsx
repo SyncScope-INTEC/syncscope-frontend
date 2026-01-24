@@ -106,15 +106,13 @@ export function AppHeader() {
 
   const handleClearAllAlerts = async () => {
     try {
-      // Acknowledge todas las alertas, continuando aunque algunas fallen
+      // Delete todas las alertas, continuando aunque algunas fallen
       const promises = alerts.map(async (alert) => {
-        if (!alert.is_acknowledged) {
-          try {
-            await alertsService.acknowledgeAlert(alert.id, user?.id || '', 'Cleared from notifications')
-          } catch (err) {
-            console.error(`Error acknowledging alert ${alert.id}:`, err)
-            // Continuar con las demás
-          }
+        try {
+          await alertsService.deleteAlert(alert.id)
+        } catch (err) {
+          console.error(`Error deleting alert ${alert.id}:`, err)
+          // Continuar con las demás
         }
       })
 
@@ -122,7 +120,7 @@ export function AppHeader() {
 
       setAlerts([])
       setUnreadCount(0)
-      toast.success('Notificaciones limpiadas')
+      toast.success('Todas las notificaciones han sido eliminadas')
       setIsNotificationsOpen(false)
     } catch (error) {
       console.error('Error clearing alerts:', error)
